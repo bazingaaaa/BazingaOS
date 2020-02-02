@@ -1,0 +1,39 @@
+#define GLOBAL_VARIABLES_HERE
+
+#include "const.h"
+#include "type.h"
+#include "protect.h"
+#include "proc.h"
+#include "tty.h"
+#include "console.h"
+#include "proto.h"
+
+PUBLIC PROCESS proc_table[NR_TASKS + NR_PROCS];
+PUBLIC PROCESS *p_proc_ready;
+
+
+PUBLIC TASK task_table[NR_TASKS] = {
+	{task_sys, STACK_SIZE_TASKSYS, "task_sys"},
+	{task_tty, STACK_SIZE_TASKTTY, "task_tty"},
+	{task_hd, STACK_SIZE_TASKTHD, "task_hd"},
+	{task_fs, STACK_SIZE_TASKTFS, "task_fs"},
+};
+
+PUBLIC TASK user_procs[NR_PROCS]={
+	{testA, STACK_SIZE_TESTA, "testA"},
+	{testB, STACK_SIZE_TESTB, "testB"},
+	{testC, STACK_SIZE_TESTC, "testC"}
+};
+
+PUBLIC TSS tss;
+
+PUBLIC irq_handler irq_table[NR_IRQS];
+
+PUBLIC system_call syscall_table[NR_SYS_CALLS] = {sys_sendrec, sys_printx};
+
+PUBLIC int ticks;
+
+PUBLIC TTY tty_table[NR_TTYS];
+PUBLIC CONSOLE console_table[NR_TTYS];
+
+int nr_cur_console;/*当前console*/
