@@ -37,3 +37,14 @@ PUBLIC TTY tty_table[NR_TTYS];
 PUBLIC CONSOLE console_table[NR_TTYS];
 
 int nr_cur_console;/*当前console*/
+
+/*如果设备顺序改变此处需要更改*/
+struct dev_drv_map dd_map[] = {
+	/*设备号			  		主设备号*/
+	{INALID_DRIVER},		/*0:未使用*/
+	{INALID_DRIVER},		/*1:为软驱保留*/
+	{INALID_DRIVER}, 		/*2:为cdrom驱动保留*/
+	{TASK_HD},				/*3:硬盘*/
+	{TASK_TTY},				/*4:tty*/
+	{INALID_DRIVER}		/*5:为scsi硬盘驱动保留*/
+}
