@@ -134,4 +134,13 @@ enum msgtype {
 #define GRAY_CHAR (MAKE_COLOR(BLACK, BLACK) | BRIGHT)
 #define RED_CHAR  (MAKE_COLOR(BLUE, RED) | BRIGHT)
 
+#define MAX_DRIVES			2/*最大硬盘数量*/
+#define NR_PART_PER_DRIVE  	4/*主引导扇区分区表对应4个主分区*/
+#define NR_SUB_PER_PART		16/*每个扩展分区最多有16个逻辑分区*/
+#define NR_SUB_PER_DRIVE   	(NR_SUB_PER_PART * NR_PART_PER_DRIVE)
+#define NR_PRIM_PER_DRIVE  	(NR_PART_PER_DRIVE + 1)
+
+#define MAX_PRIM			(MAX_DRIVES * NR_PART_PER_DRIVE - 1)
+#define MAX_SUBPARTIONS		(NR_SUB_PER_DRIVE * MAX_DRIVES)
+
 #endif

@@ -1,4 +1,4 @@
-org  7c00h	
+org  7c00h;作为boot时启用	
 	jmp short LABEL_START;start to boot
 	nop;不可缺少
 

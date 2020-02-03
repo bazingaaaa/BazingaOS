@@ -6,6 +6,10 @@
 #include "proc.h"
 #include "proto.h"
 
+
+/*
+功能：文件系统任务，用于处理和文件系统有关的消息
+*/
 PUBLIC void task_fs()
 {
 	printl("TASK FS begins.\n");
