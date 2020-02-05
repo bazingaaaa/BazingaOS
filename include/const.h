@@ -14,6 +14,7 @@ void assertion_failure(char *exp, char *file, char *base_file, int line);
 #define assert(exp)
 #endif
 
+#define MIN(a, b) (a > b ? a : b)
 
 #define TRUE 1
 #define FALSE 0
@@ -149,6 +150,14 @@ enum msgtype {
 
 #define GRAY_CHAR (MAKE_COLOR(BLACK, BLACK) | BRIGHT)
 #define RED_CHAR  (MAKE_COLOR(BLUE, RED) | BRIGHT)
+
+
+#define	DIOCTL_GET_GEO	1
+
+/*硬盘扇区*/
+#define SECTOR_SIZE 512
+#define SECTOR_SIZE_BIT		(SECTOR_SIZE * 8)
+#define SECTOR_SIZE_SHIFT	9
 
 
 #define MAX_DRIVES			2/*最大硬盘数量*/

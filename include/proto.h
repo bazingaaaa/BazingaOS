@@ -7,6 +7,7 @@ PUBLIC void init_idt();
 
 
 PUBLIC void port_read(u16 port, void* buf, int n);
+PUBLIC void port_write(u16 port, void* buf, int n);
 PUBLIC void disable_irq(int irq);
 PUBLIC void enbale_irq(int irq);
 PUBLIC void put_irq_handler(int irq, irq_handler handler);

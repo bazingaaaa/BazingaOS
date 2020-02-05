@@ -34,7 +34,6 @@
 #define ATA_READ		0x20
 #define ATA_WRITE		0x30
 
-#define SECTOR_SIZE 512
 
 #define PARTITION_TABLE_OFFSET			0x1be
 

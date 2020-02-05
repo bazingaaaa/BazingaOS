@@ -1,3 +1,4 @@
+/*memcpy的函数参数中的dst地址和src地址可按线性地址传入（由于ds/es均位flat段，即虚拟地址和线性地址一一对应）*/
 PUBLIC void* memcpy(void* p_dst, void* p_src, int size);
 PUBLIC void	memset(void* p_dst, char ch, int size);
 PUBLIC int strcmp(const char * s1, const char *s2);

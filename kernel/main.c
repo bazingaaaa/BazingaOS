@@ -112,7 +112,7 @@ PUBLIC void kernel_main()
 		p_proc->has_int_msg = 0;
 		p_proc->q_sending = 0;/*发送消息至当前进程的进程队列*/
 		p_proc->next_sending = 0;/*进程队列中的下一个进程*/
-
+		p_proc->p_msg = 0;
 
 		p_stack = p_stack - p_task->stacksize;
 		seletor_ldt += 8;

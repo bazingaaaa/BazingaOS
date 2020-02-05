@@ -6,10 +6,12 @@
 #include "protect.h"
 #include "proc.h"
 #include "proto.h"
+#include "string.h"
 
 #define	DRV_OF_DEV(dev) (dev <= MAX_PRIM ? \
 			 dev / NR_PRIM_PER_DRIVE : \
 			 (dev - MINOR_hd1a) / NR_SUB_PER_DRIVE)
+
 
 PRIVATE void interrupt_wait();
 PRIVATE int waitfor(int mask, int val, int timeout);
@@ -22,6 +24,9 @@ PRIVATE void hd_open(int device);
 PRIVATE void get_part_table(struct part_ent *entry, int drive, int sec_nr);
 PRIVATE void partition(int device, int style);
 PRIVATE void print_hdinfo(struct hd_info *hdinfo);
+PRIVATE void hd_close(int device);
+PRIVATE void hd_rdwt(MESSAGE *msg);
+PRIVATE void hd_ioctl(MESSAGE *msg);
 
 
 PRIVATE	u8	hd_status;
@@ -221,7 +226,7 @@ PRIVATE void hd_open(int device)
 {
 	int drive = DRV_OF_DEV(device);
 
-	printf("device:%d   drive:%d\n", device, drive);
+	printf("hd_open device:%d   drive:%d\n", device, drive);
 
 	/*只有一个硬盘*/
 	assert(drive == 0);
@@ -292,7 +297,7 @@ PRIVATE void partition(int device, int style)
 			hd_info[0].primary[dev_nr].base = part_ents[i].start_sect;
 			hd_info[0].primary[dev_nr].size = part_ents[i].nr_sects;
 
-			printf("i:%d  sys_id:%d\n", i, part_ents[i].sys_id);
+			//printf("i:%d  sys_id:%d\n", i, part_ents[i].sys_id);
 			if(part_ents[i].sys_id == EXT_PART)
 				partition(dev_nr, P_EXTENDED);
 		}
@@ -307,8 +312,6 @@ PRIVATE void partition(int device, int style)
 
 		for(i = 0;i < NR_SUB_PER_PART;i++)
 		{
-			printf("i:%d\n", i);
-
 			int nr_sub = nr_base + i;
 
 			/*获取分区表信息*/
@@ -364,5 +367,101 @@ PRIVATE void print_hdinfo(struct hd_info *hdinfo)
 			hdinfo[0].logical[i].size,
 			hdinfo[0].logical[i].size
 			);
+	}
+}
+
+
+/*
+功能：硬盘关闭
+*/
+PRIVATE void hd_close(int device)
+{
+	int drive = DRV_OF_DEV(device);
+
+	printf("hd_close device:%d   drive:%d\n", device, drive);
+
+	/*只有一个硬盘*/
+	assert(drive == 0);
+
+	hd_info[drive].open_cnt--;
+}
+
+
+/*
+功能：硬盘读写
+备注：一次只能对硬盘的一个扇区进行读写
+*/
+PRIVATE void hd_rdwt(MESSAGE *msg)
+{
+	u64 pos = msg->POSITION;/*读/写硬盘的位置,可能大于4G*/
+	int device = msg->DEVICE;/*读取*/
+	int drive = DRV_OF_DEV(device);
+
+	/*访问的地址不能超过1024G*/
+	assert((pos>>SECTOR_SIZE_SHIFT) < 1<<31);
+
+	/*读取的起始位置必须是整扇区字节处（暂定）*/
+	assert((pos & 0x1ff) == 0);
+	u32 sec_nr = pos>>SECTOR_SIZE_SHIFT;
+	sec_nr += device <= MAX_PRIM ? 
+				hd_info[0].primary[device].base:/*主分区*/
+				hd_info[0].logical[(device - MINOR_hd1a) % NR_SUB_PER_DRIVE].base;/*逻辑分区*/
+	int bytes_left = msg->CNT;/*读/写的字节数*/
+	void *la = va2la(msg->PROC_NR, msg->BUF);
+
+	hd_cmd cmd;
+
+	cmd.features = 0;
+	cmd.count = (msg->CNT + SECTOR_SIZE - 1) / SECTOR_SIZE;
+	cmd.lba_low = sec_nr & 0xFF;
+	cmd.lba_mid = (sec_nr>>8) & 0xFF;
+	cmd.lba_high = (sec_nr>>16) & 0xFF;	
+	cmd.command = msg->type == DEV_READ ? ATA_READ : ATA_WRITE;
+	cmd.device = MAKE_DEVICE_REG(1, drive, (sec_nr>>24)&0xF);
+
+	while(bytes_left)
+	{
+		int bytes_proc = MIN(SECTOR_SIZE, bytes_left);
+
+		if(msg->type == DEV_READ)/*读取数据*/
+		{
+			interrupt_wait();
+
+			port_read(REG_DATA, hdbuf, SECTOR_SIZE);
+			phys_copy(la, va2la(TASK_HD, hdbuf), bytes_proc);
+		}
+		else/*写入数据*/
+		{
+			if(!waitfor(STATUS_DRQ, STATUS_DRQ, HD_TIMEOUT))
+				panic("hd writing error!");
+			port_write(REG_DATA, la, bytes_proc);/*传入的是线性地址*/
+			interrupt_wait();
+		}
+		bytes_left -= bytes_proc;
+		la += SECTOR_SIZE;
+	}
+}
+
+
+/*
+功能：硬盘IO控制
+备注：目前只完成了分区扇区起始和大小的读取
+*/
+PRIVATE void hd_ioctl(MESSAGE *msg)
+{
+	int device = msg->DEVICE;
+	int drive = DRV_OF_DEV(device);
+	struct hd_info *hdi = &hd_info[drive];
+
+	if(DIOCTL_GET_GEO == msg->REQUEST)/*获取分区信息请求*/
+	{
+		void *dst = va2la(msg->PROC_NR, msg->BUF);
+		void *src = va2la(TASK_HD, device <= MAX_PRIM ?
+							&hdi->primary[device] : &hdi->logical[(device - MINOR_hd1a) % NR_SUB_PER_DRIVE]);
+		phys_copy(dst, src, sizeof(struct part_info));
+	}
+	else/*shouldn't reach here*/
+	{
+		assert(0);
 	}
 }

@@ -83,6 +83,8 @@ PUBLIC void sys_sendrec(int function, int src_dest, MESSAGE *m, PROCESS *p)
 
 /*
 功能：虚拟转换为线性地址
+备注：本系统的ds段为flat（base为0），且在建立页表时，线性地址和物理地址时一一对应关系
+	故本系统中 虚拟地址 = 线性地址 = 物理地址
 */
 PUBLIC void* va2la(int pid, void* va)
 {
@@ -313,7 +315,6 @@ PUBLIC int msg_receive(PROCESS *current, int src, MESSAGE *m)
 	}
 	else	
 	{
-		//disp_int(99);
 		p_who_wanna_rcv->p_flags |= RECEIVING;
 		p_who_wanna_rcv->p_msg = m;
 

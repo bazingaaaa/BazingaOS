@@ -67,7 +67,7 @@ typedef struct s_task
 #define NR_IRQS 16
 #define NR_SYS_CALLS 128
 
-#define STACK_SIZE 0xA000/*栈空间不能太小，栈溢出可能导致各种异常*/
+#define STACK_SIZE 0x8000/*栈空间不能太小，栈溢出可能导致各种异常*/
 #define STACK_SIZE_TESTA STACK_SIZE
 #define STACK_SIZE_TESTB STACK_SIZE
 #define STACK_SIZE_TESTC STACK_SIZE
