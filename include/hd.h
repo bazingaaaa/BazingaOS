@@ -36,6 +36,8 @@
 
 #define SECTOR_SIZE 512
 
+#define PARTITION_TABLE_OFFSET			0x1be
+
 typedef struct 
 {
 	u8 features;
@@ -47,6 +49,36 @@ typedef struct
 	u8 command;	
 }hd_cmd;
 
+
+/*分区表项*/
+struct part_ent 
+{
+	u8 boot_ind; 
+	u8 start_head;
+	u8 start_sector;
+	u8 start_cyl;
+	u8 sys_id;
+	u8 end_head;
+	u8 end_sector;
+	u8 end_cyl;
+	u32 start_sect;
+	u32 nr_sects;
+};
+
+
+struct part_info
+{
+	u32 base;/*分区扇区起始（绝对起始）*/
+	u32 size;/*分区扇区个数*/
+};
+
+
+struct hd_info
+{
+	u32 open_cnt;/*硬盘开启计数*/
+	struct part_info primary[NR_PRIM_PER_DRIVE];/*主分区信息*/
+	struct part_info logical[NR_SUB_PER_DRIVE];/*逻辑分区信息*/
+};
 
 
 #endif

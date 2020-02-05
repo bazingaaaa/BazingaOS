@@ -8,7 +8,8 @@
 
 
 /*
-功能：
+功能：把值按基底转换为字符串
+备注：在转换完后，指针需要指向最后一个元素，所以需要传递指针的指针
 */
 PRIVATE char* i2a(int val, int base, char ** ps)
 {
@@ -46,9 +47,8 @@ int vsprintf(char* buf, const char* fmt, var_list args)
 		switch(*fmt)
 		{
 			case 'x':/*16进制*/
-				itoa(temp, *(int*)p_next_arg);
-				strcpy(p, temp);
-				p += strlen(temp);
+				m = *((int*)p_next_arg);/*此处不能用strlen处理，会出现异常情况*/
+				i2a(m, 16, &p);
 				p_next_arg += 4;
 				break;
 			case 's':/*字符串,注意此处的p_next_arg是指向参数的地址，当传入字符串指针时，p_next_arg是指向

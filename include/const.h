@@ -15,8 +15,6 @@ void assertion_failure(char *exp, char *file, char *base_file, int line);
 #endif
 
 
-
-
 #define TRUE 1
 #define FALSE 0
 
@@ -72,9 +70,9 @@ void assertion_failure(char *exp, char *file, char *base_file, int line);
 #define RECEIVE		2
 #define BOTH		3	/* BOTH = (SEND | RECEIVE) */
 
+/* TASK_XX 要和global.c中对应*/
+#define INVALID_DRIVER	-20
 #define INTERRUPT -10
-
-
 #define TASK_SYS 0
 #define TASK_TTY 1
 #define TASK_HD 2
@@ -128,11 +126,30 @@ enum msgtype {
 	DEV_IOCTL
 };
 
+
+/* macros for messages */
+/* #define	FD		u.m3.m3i1 */
+/* #define	PATHNAME	u.m3.m3p1 */
+/* #define	FLAGS		u.m3.m3i1 */
+/* #define	NAME_LEN	u.m3.m3i2 */
+#define	CNT		u.m3.m3i2
+#define	REQUEST		u.m3.m3i2
+#define	PROC_NR		u.m3.m3i3
+#define	DEVICE		u.m3.m3i4
+#define	POSITION	u.m3.m3l1
+#define	BUF		u.m3.m3p2
+/* #define	OFFSET		u.m3.m3i2 */
+/* #define	WHENCE		u.m3.m3i3 */
+
+/* #define	PID		u.m3.m3i2 */
+/* #define	STATUS		u.m3.m3i1 */
 #define	RETVAL		u.m3.m3i1
+/* #define	STATUS		u.m3.m3i1 */
 
 
 #define GRAY_CHAR (MAKE_COLOR(BLACK, BLACK) | BRIGHT)
 #define RED_CHAR  (MAKE_COLOR(BLUE, RED) | BRIGHT)
+
 
 #define MAX_DRIVES			2/*最大硬盘数量*/
 #define NR_PART_PER_DRIVE  	4/*主引导扇区分区表对应4个主分区*/
@@ -140,7 +157,36 @@ enum msgtype {
 #define NR_SUB_PER_DRIVE   	(NR_SUB_PER_PART * NR_PART_PER_DRIVE)
 #define NR_PRIM_PER_DRIVE  	(NR_PART_PER_DRIVE + 1)
 
-#define MAX_PRIM			(MAX_DRIVES * NR_PART_PER_DRIVE - 1)
+#define MAX_PRIM			(MAX_DRIVES * NR_PRIM_PER_DRIVE - 1)
 #define MAX_SUBPARTIONS		(NR_SUB_PER_DRIVE * MAX_DRIVES)
+
+/*主设备号*/
+#define NO_DEV				0
+#define DEV_FLOPPY			1
+#define DEV_CDROM			2
+#define DEV_HD				3
+#define DEV_CHAR_TTY		4
+#define DEV_SCSI			5
+
+/*利用主设备号和次设备号形成设备号*/
+#define MAJOR_SHIFT			8
+#define MAKE_DEV(a, b)		((a << MAJOR_SHIFT) | b)
+
+/*利用设备号获取主设备号和次设备号*/
+#define MAJOR(x)			((x >> MAJOR_SHIFT) & 0xff)		
+#define	MINOR(x)			(x & 0xff)
+
+/*设备号*/
+#define MINOR_hd1a			0x10
+#define MINOR_hd2a			(MINOR_hd1a + NR_SUB_PER_PART)
+
+#define ROOT_DEV			MAKE_DEV(DEV_HD, MINOR_BOOT) 			
+
+#define	P_PRIMARY	0
+#define	P_EXTENDED	1
+
+#define BAZINGA_PART	0x99	/* Orange'S partition */
+#define NO_PART		0x00	/* unused entry */
+#define EXT_PART	0x05	/* extended partition */
 
 #endif

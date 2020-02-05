@@ -7,6 +7,10 @@
 #include "proc.h"
 #include "proto.h"
 
+#define	DRV_OF_DEV(dev) (dev <= MAX_PRIM ? \
+			 dev / NR_PRIM_PER_DRIVE : \
+			 (dev - MINOR_hd1a) / NR_SUB_PER_DRIVE)
+
 PRIVATE void interrupt_wait();
 PRIVATE int waitfor(int mask, int val, int timeout);
 PRIVATE void print_identify_info(u16 *hdinfo);
@@ -14,9 +18,15 @@ PRIVATE void hd_handler(int irq);
 PRIVATE void hd_identify(int drive);
 PRIVATE void init_hd();
 PRIVATE void hd_cmd_out(hd_cmd  *cmd);
+PRIVATE void hd_open(int device);
+PRIVATE void get_part_table(struct part_ent *entry, int drive, int sec_nr);
+PRIVATE void partition(int device, int style);
+PRIVATE void print_hdinfo(struct hd_info *hdinfo);
+
 
 PRIVATE	u8	hd_status;
 PRIVATE	u8	hdbuf[SECTOR_SIZE * 2];
+PRIVATE struct hd_info hd_info[1];/*目前只加载了一块硬盘*/
 
 /*
 功能：硬盘任务，用于处理和硬盘有关的消息，与硬件打交道
@@ -38,7 +48,7 @@ PUBLIC void task_hd()
 		switch(msg.type)
 		{
 			case DEV_OPEN:
-				hd_identify(0);
+				hd_open(msg.DEVICE);
 				break;
 			default:
 				panic("unknown msg type");
@@ -54,6 +64,7 @@ PUBLIC void task_hd()
 */
 PRIVATE void init_hd()
 {
+	int i;
 	u8 *pNrDrives = (u8*)0x475;
 	printl("NrDrives:%d.\n", *pNrDrives);
 	assert(*pNrDrives);
@@ -61,6 +72,11 @@ PRIVATE void init_hd()
 	put_irq_handler(AT_WINI_IRQ, hd_handler);
 	enable_irq(CASCADE_IRQ);
 	enable_irq(AT_WINI_IRQ);
+
+	/*初始化硬盘信息*/
+	for(i = 0;i < sizeof(hd_info)/sizeof(hd_info[0]);i++)
+		memset(&hd_info[i], 0, sizeof(hd_info[0]));/*地址输错会导致系统出现page fault*/
+	hd_info[0].open_cnt = 0;
 }
 
 
@@ -84,6 +100,11 @@ PRIVATE void hd_identify(int drive)
 
 	/*输出硬盘信息*/
 	print_identify_info((u16*)hdbuf);
+
+	/*保存硬盘信息,填写第一个硬盘的信息*/
+	u16 *hdinfo_buf = (u16*)hdbuf;
+	hd_info[0].primary[0].base = 0;
+	hd_info[0].primary[0].size = ((int)hdinfo_buf[61] << 16) + hdinfo_buf[60];
 }
 
 
@@ -190,4 +211,158 @@ PRIVATE void hd_handler(int irq)
 	hd_status = in_byte(REG_STATUS);
 
 	inform_int(TASK_HD);
+}
+
+
+/*
+功能：硬盘开启,打印硬盘信息
+*/
+PRIVATE void hd_open(int device)
+{
+	int drive = DRV_OF_DEV(device);
+
+	printf("device:%d   drive:%d\n", device, drive);
+
+	/*只有一个硬盘*/
+	assert(drive == 0);
+
+	/*硬盘基本信息*/
+	hd_identify(drive);
+
+	/*第一次开启硬盘，打印硬盘信息*/
+	if(hd_info[0].open_cnt++ == 0)
+	{
+		partition(drive * (NR_PART_PER_DRIVE + 1), P_PRIMARY);
+		print_hdinfo(hd_info);
+	}
+}
+
+
+/*
+功能：查找给定硬盘上指定分区中的分区表（从硬盘中读取数据）
+*/
+PRIVATE void get_part_table(struct part_ent *entry, int drive, int sec_nr)
+{
+	hd_cmd cmd;
+
+	cmd.features = 0;
+	cmd.count = 1;
+	cmd.lba_low = sec_nr & 0xFF;
+	cmd.lba_mid = (sec_nr>>8) & 0xFF;
+	cmd.lba_high = (sec_nr>>16) & 0xFF;	
+	cmd.command = ATA_READ;
+	cmd.device = MAKE_DEVICE_REG(1, drive, (sec_nr>>24)&0xF);
+
+	/*向硬盘发送命令*/
+	hd_cmd_out(&cmd);
+
+	/*等待硬盘处理完毕中断*/
+	interrupt_wait();
+
+	/*读取硬盘返回的信息*/
+	port_read(REG_DATA, hdbuf, SECTOR_SIZE);
+	memcpy(entry, hdbuf + PARTITION_TABLE_OFFSET, sizeof(struct part_ent) * NR_PART_PER_DRIVE);
+}
+
+
+/*
+功能：读取分区信息，并填写hd_info结构体
+输入：device-设备号(0-9)
+	  style-硬盘风格（主分区或扩展分区）
+*/
+PRIVATE void partition(int device, int style)
+{
+	int i;
+	int drive = DRV_OF_DEV(device);
+	struct part_ent part_ents[NR_PART_PER_DRIVE];/*分区表*/
+
+	if(P_PRIMARY == style)/*主分区*/
+	{
+		/*获取分区表信息*/
+		get_part_table(part_ents, drive, drive);
+
+		/*填写主分区信息*/
+		int nr_prim_parts = 0;
+		for(i = 0;i < NR_PART_PER_DRIVE;i++)
+		{
+			if(part_ents[i].sys_id == NO_PART)/*无效分区*/
+				continue;
+			int dev_nr = i + 1;
+			nr_prim_parts++;
+			hd_info[0].primary[dev_nr].base = part_ents[i].start_sect;
+			hd_info[0].primary[dev_nr].size = part_ents[i].nr_sects;
+
+			printf("i:%d  sys_id:%d\n", i, part_ents[i].sys_id);
+			if(part_ents[i].sys_id == EXT_PART)
+				partition(dev_nr, P_EXTENDED);
+		}
+		assert(nr_prim_parts != 0)
+	}
+	else if(P_EXTENDED == style)/*扩展分区*/
+	{
+		int j = device % NR_PRIM_PER_DRIVE;/* 1 - 4*/
+		int sec_base = hd_info[0].primary[j].base;
+		int ext_start = sec_base;/*扩展扇区起始,迭代使用*/
+		int nr_base = (j - 1) * NR_SUB_PER_PART;
+
+		for(i = 0;i < NR_SUB_PER_PART;i++)
+		{
+			printf("i:%d\n", i);
+
+			int nr_sub = nr_base + i;
+
+			/*获取分区表信息*/
+			get_part_table(part_ents, drive, ext_start);
+
+			hd_info[0].logical[nr_sub].base = ext_start + part_ents[0].start_sect;
+			hd_info[0].logical[nr_sub].size = part_ents[0].nr_sects;
+
+			/*记录上一个扩展分区的起始扇区*/
+			ext_start = sec_base + part_ents[1].start_sect;
+
+			if(part_ents[1].sys_id == NO_PART)/*没有更深层次的扩展分区嵌套*/
+				break;
+		}
+	}
+	else/*shouldn't reach here*/
+	{
+		assert(0);
+	}
+}
+
+
+/*
+功能：打印硬盘信息
+*/
+PRIVATE void print_hdinfo(struct hd_info *hdinfo)
+{
+	int i;
+
+	/*打印主分区信息*/
+	for(i = 0;i < NR_PRIM_PER_DRIVE;i++)
+	{
+		printl("%sPart_%d: base %d(0x%x), size %d(0x%x)(in sector)\n",
+			i == 0 ? " " : "     ",
+			i,
+			hdinfo[0].primary[i].base,
+			hdinfo[0].primary[i].base,
+			hdinfo[0].primary[i].size,
+			hdinfo[0].primary[i].size
+			);
+	}
+
+	/*打印逻辑分区信息*/
+	for(i = 0;i < NR_SUB_PER_DRIVE;i++)
+	{
+		if(hdinfo[0].logical[i].size == 0)
+			continue;
+		printl("%sPart_%d: base %d(0x%x), size %d(0x%x)(in sector)\n",
+			"         ",
+			i,
+			hdinfo[0].logical[i].base,
+			hdinfo[0].logical[i].base,
+			hdinfo[0].logical[i].size,
+			hdinfo[0].logical[i].size
+			);
+	}
 }
