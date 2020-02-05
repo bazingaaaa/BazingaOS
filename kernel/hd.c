@@ -55,6 +55,16 @@ PUBLIC void task_hd()
 			case DEV_OPEN:
 				hd_open(msg.DEVICE);
 				break;
+			case DEV_CLOSE:
+				hd_close(msg.DEVICE);
+				break;
+			case DEV_READ:
+			case DEV_WRITE:
+				hd_rdwt(&msg);
+				break;
+			case DEV_IOCTL:
+				hd_ioctl(&msg);
+				break;
 			default:
 				panic("unknown msg type");
 				break;
