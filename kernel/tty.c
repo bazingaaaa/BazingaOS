@@ -5,6 +5,7 @@
 #include "protect.h"
 #include "proc.h"
 #include "proto.h"
+#include "fs.h"
 #include "global.h"
 #include "keyboard.h"
 

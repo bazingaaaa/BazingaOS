@@ -49,3 +49,8 @@ struct dev_drv_map dd_map[] = {
 	{TASK_TTY},				/*4:tty*/
 	{INVALID_DRIVER}		/*5:为scsi硬盘驱动保留*/
 };
+
+
+/*FS缓冲区,位于6M~7M之间*/
+PUBLIC u8 *fsbuf = (u8*)0x600000;
+PUBLIC const int FSBUF_SIZE = 0x100000;

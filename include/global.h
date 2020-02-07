@@ -35,4 +35,9 @@ EXTERN PUBLIC CONSOLE console_table[NR_TTYS];
 
 EXTERN int nr_cur_console;/*当前console*/
 
+EXTERN struct dev_drv_map dd_map[];/*只是声明，不用填写长度*/
+
+EXTERN u8 *fsbuf;
+EXTERN const int FSBUF_SIZE;
+
 #endif

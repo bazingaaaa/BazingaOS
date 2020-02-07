@@ -5,6 +5,7 @@
 #include "protect.h"
 #include "proc.h"
 #include "proto.h"
+#include "fs.h"
 #include "global.h"
 #include "keyboard.h"
 #include "keymap.h"
@@ -303,7 +304,7 @@ PRIVATE u8 get_byte_from_kbuf()
 	while(kb_in.count <= 0)
 	{}
 	
-	disable_int();
+	disable_int();/*对kb_in.buf进行访问保护*/
 	scan_code = *(kb_in.p_tail);
 	kb_in.p_tail++;
 	if(kb_in.p_tail == kb_in.buf + KB_IN_BYTE)

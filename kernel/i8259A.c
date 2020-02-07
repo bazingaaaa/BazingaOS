@@ -5,6 +5,7 @@
 #include "const.h"
 #include "proc.h"
 #include "proto.h"
+#include "fs.h"
 #include "global.h"
 
 

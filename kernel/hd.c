@@ -48,7 +48,7 @@ PUBLIC void task_hd()
 
 		int src = msg.source;
 
-		printf("msg.type:%d\n", msg.type);
+		//printf("msg.type:%d\n", msg.type);
 
 		switch(msg.type)
 		{
@@ -428,6 +428,8 @@ PRIVATE void hd_rdwt(MESSAGE *msg)
 	cmd.lba_high = (sec_nr>>16) & 0xFF;	
 	cmd.command = msg->type == DEV_READ ? ATA_READ : ATA_WRITE;
 	cmd.device = MAKE_DEVICE_REG(1, drive, (sec_nr>>24)&0xF);
+
+	hd_cmd_out(&cmd);
 
 	while(bytes_left)
 	{

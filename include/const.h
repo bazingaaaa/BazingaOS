@@ -14,7 +14,7 @@ void assertion_failure(char *exp, char *file, char *base_file, int line);
 #define assert(exp)
 #endif
 
-#define MIN(a, b) (a > b ? a : b)
+#define MIN(a, b) (a > b ? b : a)
 
 #define TRUE 1
 #define FALSE 0
@@ -197,5 +197,28 @@ enum msgtype {
 #define BAZINGA_PART	0x99	/* Orange'S partition */
 #define NO_PART		0x00	/* unused entry */
 #define EXT_PART	0x05	/* extended partition */
+
+
+#define	NR_FILES	64
+#define	NR_FILE_DESC	64	/* FIXME */
+#define	NR_INODE	64	/* FIXME */
+#define	NR_SUPER_BLOCK	8
+
+
+/* INODE::i_mode (octal, lower 12 bits reserved) */
+#define I_TYPE_MASK     0170000
+#define I_REGULAR       0100000
+#define I_BLOCK_SPECIAL 0060000
+#define I_DIRECTORY     0040000
+#define I_CHAR_SPECIAL  0020000
+#define I_NAMED_PIPE	0010000
+
+#define	is_special(m)	((((m) & I_TYPE_MASK) == I_BLOCK_SPECIAL) ||	\
+			 (((m) & I_TYPE_MASK) == I_CHAR_SPECIAL))
+
+#define	NR_DEFAULT_FILE_SECTS	2048 /* 2048 * 512 = 1MB */
+
+#define	INVALID_INODE		0
+#define	ROOT_INODE			1
 
 #endif
