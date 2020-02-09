@@ -50,7 +50,9 @@ typedef struct s_proc
 	struct proc *q_sending;/*发送消息至当前进程的进程队列*/
 	struct proc *next_sending;/*进程队列中的下一个进程*/
 
-	u32 nr_tty;
+	u32 nr_tty;/*进程对应的终端号*/
+
+	struct file_desc *filp[NR_FILES];
 }PROCESS;
 
 typedef struct s_task

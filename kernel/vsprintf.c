@@ -76,3 +76,13 @@ int vsprintf(char* buf, const char* fmt, var_list args)
 	}
 	return p - buf;
 }
+
+
+/*
+功能：格式化输出
+*/
+int sprintf(char* buf, const char* fmt, ...)
+{
+	var_list args = (var_list)((char*)(&fmt) + 4);/*fmt的地址，而非fmt的值*/
+	vsprintf(buf, fmt, args);
+}

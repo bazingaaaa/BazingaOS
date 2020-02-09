@@ -58,6 +58,7 @@ void assertion_failure(char *exp, char *file, char *base_file, int line);
 #define MAKE_COLOR(color1, color2) (color1 | color2)
 
 #define NR_TTYS 3
+#define NR_CONSOLES	3	/* consoles */
 
 /*最大任务数，暂定为4*/
 #define NR_TASKS 4
@@ -129,10 +130,11 @@ enum msgtype {
 
 
 /* macros for messages */
-/* #define	FD		u.m3.m3i1 */
-/* #define	PATHNAME	u.m3.m3p1 */
-/* #define	FLAGS		u.m3.m3i1 */
-/* #define	NAME_LEN	u.m3.m3i2 */
+#define	FD		u.m3.m3i1
+#define	PATHNAME	u.m3.m3p1
+#define	FLAGS		u.m3.m3i1
+#define	NAME_LEN	u.m3.m3i2
+
 #define	CNT		u.m3.m3i2
 #define	REQUEST		u.m3.m3i2
 #define	PROC_NR		u.m3.m3i3
@@ -199,7 +201,7 @@ enum msgtype {
 #define EXT_PART	0x05	/* extended partition */
 
 
-#define	NR_FILES	64
+#define	NR_FILES	64/*进程打开的文件数量最大值*/
 #define	NR_FILE_DESC	64	/* FIXME */
 #define	NR_INODE	64	/* FIXME */
 #define	NR_SUPER_BLOCK	8

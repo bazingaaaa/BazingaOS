@@ -44,9 +44,17 @@ struct inode
 	u8 _unused[16];
 
 	/*内存中可见*/
-	int i_dev;
+	int i_dev;/*设备号*/
 	int i_cnt;
-	int i_num;
+	int i_num;/*node_nr*/
+};
+
+
+struct file_desc
+{
+	int fd_mode;/*读/写*/
+	int fd_pos;/*当前读/写位置*/
+	struct inode *fd_inode;/*指向inode的指针*/
 };
 
 #define INODE_SIZE 32

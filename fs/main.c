@@ -19,6 +19,7 @@ PRIVATE void set_smap();
 PRIVATE void set_inode_array();
 PRIVATE void set_root_de();
 
+struct super_block sb;
 
 /*
 功能：文件系统任务，用于处理和文件系统有关的消息
@@ -54,6 +55,18 @@ PRIVATE void mkfs()
 {
 	/*写入超级块的信息*/
 	set_superblock();
+
+	/*写入inode图信息*/
+	set_imap();
+
+	/*写入sector图信息*/
+	set_smap();
+
+	/*写入inode数组*/
+	set_inode_array();
+
+	/*写入根目录文件*/
+	set_root_de();
 }
 
 
@@ -102,7 +115,6 @@ PRIVATE void set_superblock()
 	send_rec(BOTH, dd_map[MAJOR(ROOT_DEV)].driver_nr, &driver_msg);
 
 	/*填写并写入超级块*/
-	struct super_block sb;
 	sb.magic = MAGIC_V1;/*魔数，用于标识文件系统*/
 	sb.nr_inodes = bits_per_sects;/*inode数量*/
 	sb.nr_sects = geo.size;/*文件系统占用的扇区数量*/
@@ -124,7 +136,7 @@ PRIVATE void set_superblock()
 	/*对扇区进行初始化（写入0xFE主要是为了验证硬盘写入功能是否正常）*/
 	for(i = 0;i < SECTOR_SIZE;i++)
 	{
-		fsbuf[i] = 0xFE;
+		fsbuf[i] = 0xF0;
 	}
 	memcpy(fsbuf, &sb, sizeof(struct super_block));
 
@@ -144,19 +156,50 @@ PRIVATE void set_superblock()
 
 /*
 功能：写入inode图信息
+备注：inode图的bit0作为保留，bit1位根目录文件，bit2~bit4为三个终端文件
 */
 PRIVATE void set_imap()
 {
-
+	int i;
+	memset(fsbuf, 0, SECTOR_SIZE);
+	for(i = 0;i < NR_CONSOLES + 2;i++)
+	{
+		fsbuf[0] |= (1<<i);
+	}
+	assert(fsbuf[0] = 0x1F);
+	/*将超级块信息写入到硬盘中*/
+	WR_SECT(ROOT_DEV, 2);
 }
 
 
 /*
 功能：写入sector图信息
+备注：NR_DEFAULT_FILE_SECTS为根目录文件预留，对硬盘进行写入时以扇区为单位
 */
 PRIVATE void set_smap()
 {
+	int i;
+	int nr_sects = NR_DEFAULT_FILE_SECTS + 1;/*BIT0为保留*/
+	int bits_per_byte = 8;
 
+	memset(fsbuf, 0, SECTOR_SIZE);
+	/*整字节部分*/
+	for(i = 0;i < nr_sects/bits_per_byte;i++)
+	{
+		fsbuf[i] = 0xFF;
+	}
+	/*非整字节部分*/
+	for(i = 0;i < nr_sects%bits_per_byte;i++)
+	{
+		fsbuf[nr_sects/bits_per_byte] |= (1<<i);
+	}
+	/*写入有效部分*/
+	WR_SECT(ROOT_DEV, 2 + sb.nr_imap_sects);
+	/*剩余扇区清0(第一个扇区已经处理了)*/
+	for(i = 1;i < sb.nr_smap_sects;i++)
+	{
+		WR_SECT(ROOT_DEV, 2 + sb.nr_imap_sects + i);
+	}
 }
 
 
@@ -165,7 +208,25 @@ PRIVATE void set_smap()
 */
 PRIVATE void set_inode_array()
 {
-
+	int i;
+	struct inode *pNode = (struct inode*)fsbuf;
+	memset(fsbuf, 0, SECTOR_SIZE);
+	
+	pNode->i_mode = I_DIRECTORY;
+	pNode->i_size = 4 * DIR_ENT_SIZE;
+	pNode->i_start_sect = sb.n_1st_sect;
+	pNode->i_nr_sects = NR_DEFAULT_FILE_SECTS;
+	
+	/*TTY0~2*/
+	for(i = 0;i < NR_CONSOLES;i++)
+	{
+		pNode++;
+		pNode->i_mode = I_CHAR_SPECIAL;
+		pNode->i_size = 0;
+		pNode->i_start_sect = MAKE_DEV(DEV_CHAR_TTY, i);
+		pNode->i_nr_sects = 0;
+	}
+	WR_SECT(ROOT_DEV, 2 + sb.nr_imap_sects + sb.nr_smap_sects);
 }
 
 
@@ -174,5 +235,18 @@ PRIVATE void set_inode_array()
 */
 PRIVATE void set_root_de()
 {
+	int i;
+	memset(fsbuf, 0, SECTOR_SIZE);
+	struct dir_entry *pDe = (struct dir_entry *)fsbuf;
+	pDe->inode_nr = ROOT_INODE;
+	strcpy(pDe->name, ".");
 
+	/*dev_tty0~2*/
+	for(i = 0;i < NR_CONSOLES;i++)
+	{
+		pDe++;
+		pDe->inode_nr = i + 2;
+		sprintf(pDe->name, "dev_tty%d", i);
+	}
+	WR_SECT(ROOT_DEV, sb.n_1st_sect);
 }

@@ -64,6 +64,7 @@ PUBLIC void scroll_screen(CONSOLE *p_con, int direction);
 
 /*vsprintf.c*/
 PUBLIC int vsprintf(char* buf, const char* fmt, var_list args);
+PUBLIC int sprintf(char* buf, const char* fmt, ...);
 
 /*printf.c*/
 PUBLIC void printf(char *fmt, ...);
@@ -86,4 +87,9 @@ PUBLIC void task_hd();
 
 /*fs/main.c*/
 PUBLIC void task_fs();
+// PUBLIC int open(const char* pathname, int flags, mode_t mode);
+// PUBLIC ssize_t write(int fd, const void* buf, size_t count);
+// PUBLIC ssize_t read(int fd, void* buf, size_t count);
+// PUBLIC int close(int fd);
+
 
