@@ -15,7 +15,8 @@ BAZINGABOOT = boot/boot.bin boot/loader.bin
 BAZINGAKERNEL = kernel/kernel.bin
 OBJS = kernel/kernel.o kernel/start.o lib/kliba.o lib/klib.o lib/string.o kernel/i8259a.o kernel/protect.o \
 		kernel/main.o kernel/global.o kernel/clock.o kernel/syscall.o kernel/proc.o kernel/keyboard.o kernel/tty.o \
-		kernel/console.o kernel/printf.o kernel/vsprintf.o lib/misc.o kernel/systask.o kernel/hd.o fs/main.o
+		kernel/console.o kernel/printf.o kernel/vsprintf.o lib/misc.o kernel/systask.o kernel/hd.o fs/main.o lib/open.o \
+		fs/misc.o
 	
 
 
@@ -96,6 +97,9 @@ kernel/hd.o: kernel/hd.c
 lib/misc.o: lib/misc.c include/proto.h
 	$(CC) $(CFLAG) -o $@ $<	
 
+lib/open.o: lib/open.c
+	$(CC) $(CFLAG) -o $@ $<	
+
 lib/kliba.o: lib/kliba.asm
 	$(ASM) $(ASMKFLAG) -o $@ $<
 
@@ -111,3 +115,5 @@ lib/string.o: lib/string.asm
 fs/main.o: fs/main.c
 	$(CC) $(CFLAG) -o $@ $<
 	
+fs/misc.o: fs/misc.c
+	$(CC) $(CFLAG) -o $@ $<

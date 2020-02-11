@@ -62,7 +62,7 @@ void assertion_failure(char *exp, char *file, char *base_file, int line);
 
 /*最大任务数，暂定为4*/
 #define NR_TASKS 4
-#define NR_PROCS 0
+#define NR_PROCS 3
 
 #define FIRST_PROC	proc_table[0]
 #define LAST_PROC	proc_table[NR_TASKS + NR_PROCS - 1]
@@ -208,12 +208,12 @@ enum msgtype {
 
 
 /* INODE::i_mode (octal, lower 12 bits reserved) */
-#define I_TYPE_MASK     0170000
-#define I_REGULAR       0100000
-#define I_BLOCK_SPECIAL 0060000
-#define I_DIRECTORY     0040000
-#define I_CHAR_SPECIAL  0020000
-#define I_NAMED_PIPE	0010000
+#define I_TYPE_MASK     0x0170000
+#define I_REGULAR       0x0100000
+#define I_BLOCK_SPECIAL 0x0060000
+#define I_DIRECTORY     0x0040000
+#define I_CHAR_SPECIAL  0x0020000
+#define I_NAMED_PIPE	0x0010000
 
 #define	is_special(m)	((((m) & I_TYPE_MASK) == I_BLOCK_SPECIAL) ||	\
 			 (((m) & I_TYPE_MASK) == I_CHAR_SPECIAL))

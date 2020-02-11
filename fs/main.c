@@ -12,23 +12,43 @@
 
 PRIVATE void init_fs();
 PRIVATE void mkfs();
-PRIVATE int rw_sector(int io_type, int dev, u64 pos, int bytes, int proc_nr, void* buf);
 PRIVATE void set_superblock();
 PRIVATE void set_imap();
 PRIVATE void set_smap();
 PRIVATE void set_inode_array();
 PRIVATE void set_root_de();
+PRIVATE void read_super_block(int dev);
+PUBLIC struct super_block* get_super_block(int dev);
 
-struct super_block sb;
+
+struct super_block sb;/*临时存放超级块信息*/
+
 
 /*
 功能：文件系统任务，用于处理和文件系统有关的消息
 */
 PUBLIC void task_fs()
 {
-	printl("TASK FS begins.\n");
 	init_fs();	
-	spin("FS");
+	while(1)
+	{
+		MESSAGE msg;
+		int src;
+
+		send_rec(RECEIVE, ANY, &msg);
+		src = msg.source;
+		switch(msg.type)
+		{
+			case OPEN:
+				msg.FD = do_open(&msg);
+				break;
+			case CLOSE:
+				msg.RETVAL = do_close(&msg);
+				break;
+		}
+		msg.type = SYSCALL_RET;
+		send_rec(SEND, src, &msg);
+	}
 }
 
 
@@ -37,6 +57,23 @@ PUBLIC void task_fs()
 */
 PRIVATE void init_fs()
 {
+	int i;
+	struct super_block *sb;
+
+	/*数组初始化*/
+	for(i = 0;i < NR_FILE_DESC;i++)
+	{
+		memset(&fd_table[i], 0, sizeof(struct file_desc));
+	}
+	for(i = 0;i < NR_INODE;i++)
+	{
+		memset(&inode_table[i], 0, sizeof(struct inode));
+	}
+	for(i = 0;i < NR_SUPER_BLOCK;i++)
+	{
+		super_block[i].sb_dev = NO_DEV;
+	}
+
 	/*开启设备*/
 	MESSAGE driver_msg;
 	driver_msg.type = DEV_OPEN;
@@ -45,6 +82,14 @@ PRIVATE void init_fs()
 
 	/*建立文件系统*/
 	mkfs();
+
+	/*读取超级块信息*/
+	read_super_block(ROOT_DEV);
+	sb = get_super_block(ROOT_DEV);
+	assert(sb->magic == MAGIC_V1);
+
+	/*设置根目录节点信息*/
+	root_inode = get_inode(ROOT_DEV, ROOT_INODE);
 }
 
 
@@ -81,7 +126,7 @@ PRIVATE void mkfs()
 返回值：0-读/写正常
 备注：阻塞调用
 */
-PRIVATE int rw_sector(int io_type, int dev, u64 pos, int bytes, int proc_nr, void* buf)
+PUBLIC int rw_sector(int io_type, int dev, u64 pos, int bytes, int proc_nr, void* buf)
 {
 	MESSAGE driver_msg;
 	driver_msg.type = io_type;
@@ -196,6 +241,7 @@ PRIVATE void set_smap()
 	/*写入有效部分*/
 	WR_SECT(ROOT_DEV, 2 + sb.nr_imap_sects);
 	/*剩余扇区清0(第一个扇区已经处理了)*/
+	memset(fsbuf, 0, SECTOR_SIZE);
 	for(i = 1;i < sb.nr_smap_sects;i++)
 	{
 		WR_SECT(ROOT_DEV, 2 + sb.nr_imap_sects + i);
@@ -249,4 +295,143 @@ PRIVATE void set_root_de()
 		sprintf(pDe->name, "dev_tty%d", i);
 	}
 	WR_SECT(ROOT_DEV, sb.n_1st_sect);
+}
+
+
+/*
+功能：从硬盘中读取超级块
+输入：dev-设备号
+*/
+PRIVATE void read_super_block(int dev)
+{
+	int i;
+	MESSAGE driver_msg;
+	driver_msg.type = DEV_READ;
+	driver_msg.DEVICE = MINOR(dev);/*次设备号*/
+	driver_msg.POSITION = SECTOR_SIZE * 1;
+	driver_msg.CNT = SECTOR_SIZE;
+	driver_msg.PROC_NR = TASK_FS;
+	driver_msg.BUF= fsbuf;
+	assert(dd_map[MAJOR(dev)].driver_nr != INVALID_DRIVER);
+	send_rec(BOTH, dd_map[MAJOR(dev)].driver_nr, &driver_msg);
+
+	for(i = 0;i < NR_SUPER_BLOCK;i++)
+	{
+		if(NO_DEV == super_block[i].sb_dev)
+		{
+			break;
+		}
+	}
+	if(i >= NR_SUPER_BLOCK)
+		panic("super_block slots used up\n");
+
+	assert(i == 0);/*目前只有一个超级块*/
+
+	super_block[i] = *(struct super_block*)fsbuf;
+	super_block[i].sb_dev = dev;
+}
+
+
+/*
+功能：获取超级块信息
+*/
+PUBLIC struct super_block* get_super_block(int dev)
+{
+	int i;
+	for(i = 0;i < NR_SUPER_BLOCK;i++)
+	{
+		if(super_block[i].sb_dev = dev)
+		{
+			return &super_block[i];
+		}
+	}
+	panic("super block of dev %d is not found\n", dev);
+
+	return 0;
+}
+
+
+/*
+功能：获取节点
+备注：从缓存中（inode_table）获取节点，若没找到则从硬盘中进行读取
+*/
+PUBLIC struct inode* get_inode(int dev, int inode_nr)
+{
+	struct inode *p;
+	struct inode *q = 0;
+
+	/*查询是由位于缓存中,若存在直接将其取出，否则占用一个空闲槽位，整个缓存区都需要遍历到*/
+	for(p = inode_table;p < inode_table + NR_INODE;p++)
+	{
+		if(p->i_cnt)
+		{
+			if(p->i_dev == dev && p->i_num == inode_nr)/*找到指定节点*/
+			{
+				return p;
+			}
+		}
+		else/*空闲槽位*/
+		{	
+			if(!q)/*还未找到该节点，临时占用空闲槽位*/
+			{
+				q = p;
+			}
+		}
+	}
+	if(!q)
+	{
+		panic("invalid inode\n");
+	}
+	/*inode信息初始化*/
+	q->i_dev = dev;
+	q->i_num = inode_nr;
+	q->i_cnt = 1;
+
+	/*从硬盘中读取inode信息,DIR_ENT_SIZE可以被SECTOR_SIZE整除*/
+	struct super_block *sb = get_super_block(dev);
+	int sect_nr = 1 + 1 + sb->nr_imap_sects + sb->nr_smap_sects + (inode_nr - 1) * DIR_ENT_SIZE / SECTOR_SIZE;/*读取inode所在的扇区*/
+	RD_SECT(dev, sect_nr);
+	struct inode *pNode = (struct inode*)fsbuf + (inode_nr - 1) % (SECTOR_SIZE / DIR_ENT_SIZE);/*该inode位于读取扇区的第几个*/
+
+	/*写入读取inode信息*/
+	q->i_mode = pNode->i_mode;
+	q->i_size = pNode->i_size;
+	q->i_start_sect = pNode->i_start_sect;
+	q->i_nr_sects = pNode->i_nr_sects;
+	return q;
+}
+
+
+/*
+功能：释放inode
+*/
+PUBLIC void put_inode(struct inode *pNode)
+{
+	assert(pNode->i_cnt > 0);
+	pNode->i_cnt--;
+}
+
+
+/*
+功能：inode同步
+备注：将更改过inode写入硬盘，保持缓存与硬盘的同步
+*/
+PUBLIC void sync_inode(struct inode *pNode)
+{
+	int inode_nr = pNode->i_num;
+	int dev = pNode->i_dev;
+
+	/*从硬盘中读取inode信息,DIR_ENT_SIZE可以被SECTOR_SIZE整除*/
+	struct super_block *sb = get_super_block(dev);
+	int sect_nr = 1 + 1 + sb->nr_imap_sects + sb->nr_smap_sects + (inode_nr- 1) * DIR_ENT_SIZE / SECTOR_SIZE;/*读取inode所在的扇区*/
+	RD_SECT(dev, sect_nr);
+	struct inode *pDst = (struct inode*)fsbuf + (inode_nr - 1) % (SECTOR_SIZE / DIR_ENT_SIZE);/*该inode位于读取扇区的第几个*/
+
+	/*写入读取inode信息*/
+	pDst->i_mode = pNode->i_mode;
+	pDst->i_size = pNode->i_size;
+	pDst->i_start_sect = pNode->i_start_sect;
+	pDst->i_nr_sects = pNode->i_nr_sects;
+
+	WR_SECT(dev, sect_nr);
 }

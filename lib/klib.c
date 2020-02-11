@@ -55,7 +55,7 @@ PUBLIC void disp_int(int input)
 /*
 功能：延时函数
 */
-void delay(int time)
+PUBLIC void delay(int time)
 {
 	int i, j, k;
 
@@ -73,7 +73,7 @@ void delay(int time)
 /*
 功能：计算字符串长度
 */
-int strlen(char* str)
+PUBLIC int strlen(char* str)
 {
 	int len = 0;
 	while(*str)

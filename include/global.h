@@ -40,4 +40,9 @@ EXTERN struct dev_drv_map dd_map[];/*只是声明，不用填写长度*/
 EXTERN u8 *fsbuf;
 EXTERN const int FSBUF_SIZE;
 
+EXTERN struct super_block super_block[NR_SUPER_BLOCK];
+EXTERN struct inode inode_table[NR_INODE];
+EXTERN struct file_desc fd_table[NR_FILE_DESC]; 
+EXTERN	struct inode *root_inode;
+
 #endif

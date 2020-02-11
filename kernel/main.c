@@ -17,14 +17,8 @@ u8 task_stack[STACK_SIZE_TOTAL];
 
 void testA()
 {
-	int i = 0;
-	while(1)
-	{
-		//disp_int(111111);
-		//printf("<Ticks:%x>", get_ticks());
-		//printf("A");
-		milli_delay(200);
-	}
+	open("/test", 0);
+	spin("testA");
 }
 
 

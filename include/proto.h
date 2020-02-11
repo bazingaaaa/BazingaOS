@@ -87,9 +87,12 @@ PUBLIC void task_hd();
 
 /*fs/main.c*/
 PUBLIC void task_fs();
-// PUBLIC int open(const char* pathname, int flags, mode_t mode);
-// PUBLIC ssize_t write(int fd, const void* buf, size_t count);
-// PUBLIC ssize_t read(int fd, void* buf, size_t count);
-// PUBLIC int close(int fd);
+PUBLIC struct super_block* get_super_block(int dev);
+PUBLIC struct inode* get_inode(int dev, int inode_nr);
+PUBLIC void put_inode(struct inode *pNode);
+PUBLIC void sync_inode(struct inode *pNode);
+PUBLIC int rw_sector(int io_type, int dev, u64 pos, int bytes, int proc_nr, void* buf);
 
+/*fs/misc.c*/
+PUBLIC int strip_path(char* filename, struct inode **ppinode, const char* pathname);
 

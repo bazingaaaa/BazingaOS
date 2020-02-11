@@ -38,9 +38,9 @@ struct inode
 {
 	/*设备上可见*/
 	u32 i_mode;
-	u32 i_size;
+	u32 i_size;/*文件实际占用的大小*/
 	u32 i_start_sect;
-	u32 i_nr_sects;
+	u32 i_nr_sects;/*文件占用的总大小*/
 	u8 _unused[16];
 
 	/*内存中可见*/
