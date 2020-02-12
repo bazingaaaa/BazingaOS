@@ -37,6 +37,7 @@ PUBLIC void task_fs()
 
 		send_rec(RECEIVE, ANY, &msg);
 		src = msg.source;
+		pcaller = &proc_table[src];
 		switch(msg.type)
 		{
 			case OPEN:

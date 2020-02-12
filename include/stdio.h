@@ -8,3 +8,11 @@
 #define SEEK_END	3
 
 #define	MAX_PATH	128
+
+
+/*打开文件*/
+PUBLIC int open(const char* pathname, int flags);
+
+
+/*关闭文件*/
+PUBLIC int close(int fd);

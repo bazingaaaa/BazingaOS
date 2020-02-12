@@ -7,17 +7,19 @@
 #include "proto.h"
 #include "fs.h"
 #include "global.h"
+#include "stdio.h"
 
 
 int k_reenter;
-//extern int runner_cnt;
-
-//u8 task_stack[NR_TASKS][STACK_SIZE];
 u8 task_stack[STACK_SIZE_TOTAL];
 
 void testA()
 {
-	open("/test", 0);
+	int fd = open("/test", O_CREAT);
+	printf("fd:%d\n", fd);
+	close(fd);
+	fd = open("/test", O_RDWR);
+	printf("fd:%d\n", fd);
 	spin("testA");
 }
 
