@@ -267,7 +267,7 @@ PRIVATE void set_inode_array()
 	/*TTY0~2*/
 	for(i = 0;i < NR_CONSOLES;i++)
 	{
-		pNode++;
+		pNode = (struct inode*)(fsbuf + (i + 1) * INODE_SIZE);
 		pNode->i_mode = I_CHAR_SPECIAL;
 		pNode->i_size = 0;
 		pNode->i_start_sect = MAKE_DEV(DEV_CHAR_TTY, i);
@@ -388,11 +388,11 @@ PUBLIC struct inode* get_inode(int dev, int inode_nr)
 	q->i_num = inode_nr;
 	q->i_cnt = 1;
 
-	/*从硬盘中读取inode信息,DIR_ENT_SIZE可以被SECTOR_SIZE整除*/
+	/*从硬盘中读取inode信息*/
 	struct super_block *sb = get_super_block(dev);
-	int sect_nr = 1 + 1 + sb->nr_imap_sects + sb->nr_smap_sects + (inode_nr - 1) * DIR_ENT_SIZE / SECTOR_SIZE;/*读取inode所在的扇区*/
+	int sect_nr = 1 + 1 + sb->nr_imap_sects + sb->nr_smap_sects + (inode_nr - 1) * INODE_SIZE / SECTOR_SIZE;/*读取inode所在的扇区*/
 	RD_SECT(dev, sect_nr);
-	struct inode *pNode = (struct inode*)fsbuf + (inode_nr - 1) % (SECTOR_SIZE / DIR_ENT_SIZE);/*该inode位于读取扇区的第几个*/
+	struct inode *pNode = (struct inode*)(fsbuf + ((inode_nr - 1) % (SECTOR_SIZE / INODE_SIZE)) * INODE_SIZE);/*该inode位于读取扇区的第几个*/
 
 	/*写入读取inode信息*/
 	q->i_mode = pNode->i_mode;
@@ -422,11 +422,11 @@ PUBLIC void sync_inode(struct inode *pNode)
 	int inode_nr = pNode->i_num;
 	int dev = pNode->i_dev;
 
-	/*从硬盘中读取inode信息,DIR_ENT_SIZE可以被SECTOR_SIZE整除*/
+	/*从硬盘中读取inode信息*/
 	struct super_block *sb = get_super_block(dev);
-	int sect_nr = 1 + 1 + sb->nr_imap_sects + sb->nr_smap_sects + (inode_nr- 1) * DIR_ENT_SIZE / SECTOR_SIZE;/*读取inode所在的扇区*/
+	int sect_nr = 1 + 1 + sb->nr_imap_sects + sb->nr_smap_sects + (inode_nr - 1) * INODE_SIZE / SECTOR_SIZE;/*读取inode所在的扇区*/
 	RD_SECT(dev, sect_nr);
-	struct inode *pDst = (struct inode*)fsbuf + (inode_nr - 1) % (SECTOR_SIZE / DIR_ENT_SIZE);/*该inode位于读取扇区的第几个*/
+	struct inode *pDst = (struct inode*)(fsbuf + ((inode_nr - 1) % (SECTOR_SIZE / INODE_SIZE)) * INODE_SIZE);/*该inode位于读取扇区的第几个*/
 
 	/*写入读取inode信息*/
 	pDst->i_mode = pNode->i_mode;
