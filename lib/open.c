@@ -8,13 +8,14 @@
 #include "proto.h"
 #include "fs.h"
 #include "global.h"
-
+#include "stdio.h"
+#include "string.h"
 
 PRIVATE int alloc_smap_bit(int dev, int nr_sects_to_alloc);
 PRIVATE int alloc_imap_bit(int dev);
 PRIVATE struct inode* create_file(const char* path, int flags);
 PRIVATE void new_directory_entry(struct inode *de, const char *filename, int inode_nr);
-PRIVATE struct inode* new_inode(int dev, int inode_nr);
+PRIVATE struct inode* new_inode(int dev, int inode_nr, int start_sect);
 
 
 /*
@@ -22,7 +23,100 @@ PRIVATE struct inode* new_inode(int dev, int inode_nr);
 */
 PUBLIC int do_open(MESSAGE *msg)
 {
-	return 0;
+	char path[MAX_PATH];
+	char filename[MAX_FILENAME_LEN];
+	int flags = msg->FLAGS;
+	int fd = -1;
+	struct inode *dir_inode;
+	struct inode *pNode = 0;
+	int inode_nr = 0;
+	int i, j;
+	int imode = 0;
+
+	/*获取文件路径*/
+	phys_copy(va2la(TASK_FS, path), va2la(proc2pid(pcaller), msg->PATHNAME), MAX_PATH);
+
+	/*查看是否有空闲fd*/
+	for(i = 0;i < NR_FILES;i++)
+	{
+		if(0 == pcaller->filp[i])
+		{
+			fd = i;
+			break;
+		}
+	}
+	if(fd < 0 || fd >= NR_FILES)
+	{
+		panic("fd slot is full");
+	}
+	
+	/*查看fd_table中是否有空闲槽位*/
+	for(i = 0;i < NR_FILE_DESC;i++)
+	{
+		if(0 == fd_table[i].fd_inode)/*空闲槽位*/
+		{
+			break;
+		}
+	}
+	if(i >= NR_FILE_DESC)
+	{
+		panic("fd table is full");
+	}
+
+	/*查找文件*/
+	inode_nr = search_file(path);
+	if(flags & O_CREAT)/*创建文件*/
+	{
+		if(0 != inode_nr)/*待创建的文件已经存在*/
+		{
+			return -1;
+		}
+		/*创建文件*/
+		pNode = create_file(path, flags);
+		inode_nr = pNode->i_num;
+	}
+	else/*读写文件*/
+	{
+		assert(flags & O_RDWR);
+		/*抽取文件名*/
+		if(0 != strip_path(filename, &dir_inode, path) || 0 == inode_nr)/*无效路径名或者未找到该文件*/
+		{
+			return -2;
+		}
+		pNode = get_inode(dir_inode->i_dev, inode_nr);
+	}
+
+	assert(0 != inode_nr && 0 != pNode);
+
+	/*将进程的fd绑定到fd_table中的某个元素上*/
+	pcaller->filp[fd] = &fd_table[i];
+
+	/*将文件描述符和inode绑定*/
+	fd_table[i].fd_inode = pNode;
+
+	fd_table[i].fd_mode = flags;
+	fd_table[i].fd_pos = 0;
+
+	imode = pNode->i_mode;
+
+	if(I_CHAR_SPECIAL == imode)/*特殊字符文件*/
+	{
+		MESSAGE driver_msg;
+		driver_msg.type = DEV_OPEN;
+		driver_msg.DEVICE = MINOR(pNode->i_start_sect);/*次设备号*/
+		assert(dd_map[MAJOR(pNode->i_start_sect)].driver_nr != INVALID_DRIVER);
+		send_rec(BOTH, dd_map[MAJOR(pNode->i_start_sect)].driver_nr, &driver_msg);
+	}
+	else if(I_DIRECTORY == imode)/*目录文件*/
+	{
+		assert(pNode->i_num == ROOT_INODE);
+	}
+	else
+	{
+		assert(I_REGULAR == imode);
+	}
+	
+	return fd;
 }
 
 
@@ -31,6 +125,16 @@ PUBLIC int do_open(MESSAGE *msg)
 */
 PUBLIC int do_close(MESSAGE *msg)
 {
+	int fd = msg->FD;
+
+	if(fd < 0 || fd >= NR_FILES)/*无效fd*/
+	{
+		return -1;
+	}
+	put_inode(pcaller->filp[fd]->fd_inode);
+	pcaller->filp[fd]->fd_inode = 0;
+	pcaller->filp[fd] = 0;
+
 	return 0;
 }
 
@@ -179,7 +283,7 @@ PRIVATE struct inode* create_file(const char* path, int flags)
 	sect_nr = alloc_smap_bit(dir_inode->i_dev, NR_DEFAULT_FILE_SECTS);
 
 	/*分配inode*/
-	pNode = new_inode(dir_inode->i_dev, inode_nr);
+	pNode = new_inode(dir_inode->i_dev, inode_nr, sect_nr);
 
 	/*在根目录中创建目录项*/
 	new_directory_entry(dir_inode, filename, inode_nr);
@@ -209,19 +313,16 @@ PRIVATE void new_directory_entry(struct inode *de_node, const char *filename, in
 		{
 			if(0 == en->inode_nr)
 			{
-				//printf("j: %d\n", j);
 				dst = en;
 				break;
 			}		
 		}
 		if(dst)/*找到空闲槽位*/
 		{
-			//printf("A %d\n", );
 			break;
 		}
 		else if(!nr_dir)
 		{
-			//printf("B\n");
 			dst = en;
 			de_node->i_size += DIR_ENT_SIZE;
 			break;
@@ -232,6 +333,7 @@ PRIVATE void new_directory_entry(struct inode *de_node, const char *filename, in
 	dst->inode_nr = inode_nr;
 	strcpy(dst->name, filename);
 
+	/*将更新之后的根目录文件写入硬盘*/
 	WR_SECT(de_node->i_dev, i + sect_nr);
 }
 
@@ -239,9 +341,14 @@ PRIVATE void new_directory_entry(struct inode *de_node, const char *filename, in
 /*
 功能：创建新的节点
 */
-PRIVATE struct inode* new_inode(int dev, int inode_nr)
+PRIVATE struct inode* new_inode(int dev, int inode_nr, int start_sect)
 {
-	struct inode *pNode = get_inode(dev, inode_nr);/*在缓存中查找inode*/
+	struct inode *pNode = get_inode(dev, inode_nr);/*在缓存中查找inode,若没有则申请一个新的缓存*/
+
+	pNode->i_mode = I_REGULAR;
+	pNode->i_size = 0;
+	pNode->i_start_sect = start_sect;
+	pNode->i_nr_sects = NR_DEFAULT_FILE_SECTS;
 
 	pNode->i_dev = dev;
 	pNode->i_num = inode_nr;
@@ -249,5 +356,6 @@ PRIVATE struct inode* new_inode(int dev, int inode_nr)
 
 	/*将inode信息写入硬盘*/
 	sync_inode(pNode);
-	return 0;
+
+	return pNode;
 }
