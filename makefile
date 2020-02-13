@@ -16,7 +16,7 @@ BAZINGAKERNEL = kernel/kernel.bin
 OBJS = kernel/kernel.o kernel/start.o lib/kliba.o lib/klib.o lib/string.o kernel/i8259a.o kernel/protect.o \
 		kernel/main.o kernel/global.o kernel/clock.o kernel/syscall.o kernel/proc.o kernel/keyboard.o kernel/tty.o \
 		kernel/console.o kernel/printf.o kernel/vsprintf.o lib/misc.o kernel/systask.o kernel/hd.o fs/main.o lib/open.o \
-		fs/misc.o lib/close.o
+		fs/misc.o lib/close.o fs/read_write.o lib/read.o lib/write.o
 	
 
 
@@ -92,7 +92,10 @@ kernel/systask.o: kernel/systask.c
 	$(CC) $(CFLAG) -o $@ $<	
 
 kernel/hd.o: kernel/hd.c 
-	$(CC) $(CFLAG) -o $@ $<	
+	$(CC) $(CFLAG) -o $@ $<
+
+kernel/protect.o: kernel/protect.c
+	$(CC) $(CFLAG) -o $@ $<
 
 lib/misc.o: lib/misc.c
 	$(CC) $(CFLAG) -o $@ $<	
@@ -109,14 +112,20 @@ lib/kliba.o: lib/kliba.asm
 lib/klib.o: lib/klib.c
 	$(CC) $(CFLAG) -o $@ $<
 
-kernel/protect.o: kernel/protect.c
+lib/string.o: lib/string.asm 
+	$(ASM) $(ASMKFLAG) -o $@ $<
+
+lib/read.o: lib/read.c
 	$(CC) $(CFLAG) -o $@ $<
 
-lib/string.o: lib/string.asm 
-	$(ASM) $(ASMKFLAG) -o $@ $<	
+lib/write.o: lib/write.c
+	$(CC) $(CFLAG) -o $@ $<
 
 fs/main.o: fs/main.c
 	$(CC) $(CFLAG) -o $@ $<
 	
 fs/misc.o: fs/misc.c
+	$(CC) $(CFLAG) -o $@ $<
+
+fs/read_write.o: fs/read_write.c
 	$(CC) $(CFLAG) -o $@ $<

@@ -16,3 +16,11 @@ PUBLIC int open(const char* pathname, int flags);
 
 /*关闭文件*/
 PUBLIC int close(int fd);
+
+
+/*读文件*/
+PUBLIC int read(int fd, char* buf, int size);
+
+
+/*写文件*/
+PUBLIC int write(int fd, const char* buf, int size);

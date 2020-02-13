@@ -66,6 +66,7 @@ PUBLIC void task_hd()
 				hd_ioctl(&msg);
 				break;
 			default:
+				printf("msgtype:%d\n", msg.type);
 				panic("unknown msg type");
 				break;
 		}

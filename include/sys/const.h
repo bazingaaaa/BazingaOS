@@ -14,7 +14,7 @@ void assertion_failure(char *exp, char *file, char *base_file, int line);
 #define assert(exp)
 #endif
 
-#define MIN(a, b) (a > b ? b : a)
+#define MIN(a, b) ((a) > (b) ? (b) : (a))
 
 #define TRUE 1
 #define FALSE 0
@@ -208,12 +208,12 @@ enum msgtype {
 
 
 /* INODE::i_mode (octal, lower 12 bits reserved) */
-#define I_TYPE_MASK     0x0170000
-#define I_REGULAR       0x0100000
-#define I_BLOCK_SPECIAL 0x0060000
-#define I_DIRECTORY     0x0040000
-#define I_CHAR_SPECIAL  0x0020000
-#define I_NAMED_PIPE	0x0010000
+#define I_TYPE_MASK     0170000
+#define I_REGULAR       0100000
+#define I_BLOCK_SPECIAL 0060000
+#define I_DIRECTORY     0040000
+#define I_CHAR_SPECIAL  0020000
+#define I_NAMED_PIPE	0010000
 
 #define	is_special(m)	((((m) & I_TYPE_MASK) == I_BLOCK_SPECIAL) ||	\
 			 (((m) & I_TYPE_MASK) == I_CHAR_SPECIAL))

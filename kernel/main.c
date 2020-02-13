@@ -15,11 +15,14 @@ u8 task_stack[STACK_SIZE_TOTAL];
 
 void testA()
 {
-	int fd = open("/test", O_CREAT);
-	printf("fd:%d\n", fd);
+	char buf[20];
+	char input[] = "hello world!";
+	int fd = open("/test", O_CREAT | O_RDWR);
+	int cnt1 = write(fd, input, sizeof(input));
 	close(fd);
 	fd = open("/test", O_RDWR);
-	printf("fd:%d\n", fd);
+	int cnt2 = read(fd, buf, sizeof(input));
+	printf("buf:%s", buf);
 	spin("testA");
 }
 

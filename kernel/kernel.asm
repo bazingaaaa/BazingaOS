@@ -71,7 +71,7 @@ global hwint15
 
 global sys_call
 
-_start:
+_start:;此处为整个代码段入口，必须命名为_start以便连接器识别
 	mov esp, StackTop
 
 	mov dword [disp_pos], 0;此行必不可少，少了就出BUG

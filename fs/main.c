@@ -46,6 +46,10 @@ PUBLIC void task_fs()
 			case CLOSE:
 				msg.RETVAL = do_close(&msg);
 				break;
+			case READ:
+			case WRITE:
+				msg.CNT = do_rdwt(&msg);
+				break;
 		}
 		msg.type = SYSCALL_RET;
 		send_rec(SEND, src, &msg);

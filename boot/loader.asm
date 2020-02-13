@@ -109,12 +109,12 @@ ONE_SECTOR_FINISH:
 	jmp READ_ON_SECTOR
 
 
-;发现loader.bin之后的操作,此时di已经指向loader.bin的尾部
+;发现kernel.bin之后的操作,此时di已经指向kernel.bin的尾部
 ;1.取出起始的扇区号
 ;2.读取扇区号对应的数据
 ;3.根据扇区号获取对应的FAT项，并获取下一个扇区号
 ;4.判断扇区号是否为0xFFF,若是则结束，若否则回到2
-LOADER_FOUND:;找到了loader.bin
+LOADER_FOUND:;找到了kernel.bin
 	mov ax, RootDirSectors
 	and di, 0FFE0h;找到对应目录项的起始
 	add di, 01Ah
@@ -315,7 +315,7 @@ LABEL_PM_START:
 	;启动分页
 	call SetupPaging
 
-	;装载内核
+	;装载内核，对内核的代码段和数据段进行装载
 	call InitKernel
 	
 	jmp SelectorFlatC:KernelEntryPointPhyAdr
