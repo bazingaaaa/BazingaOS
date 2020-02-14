@@ -13,15 +13,15 @@ bits 32
 
 sendrec:
 	mov eax, _NR_sendrecv
-	mov ebx, [esp + 4];/*function*/
-	mov ecx, [esp + 8];/*src_dest*/
-	mov edx, [esp + 12];/*message*/
+	mov ebx, [esp + 4];1st:function
+	mov ecx, [esp + 8];2nd:src_dest
+	mov edx, [esp + 12];3rd:message
 	int INT_VECTOR_SYS_CALL
 	ret
 
 printx:
 	mov eax, _NR_printx
-	mov ebx, [esp + 4];buf
+	mov ebx, [esp + 4];1st:buf
 	int INT_VECTOR_SYS_CALL
 	ret 
 

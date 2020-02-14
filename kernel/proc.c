@@ -59,7 +59,7 @@ PUBLIC void sys_sendrec(int function, int src_dest, MESSAGE *m, PROCESS *p)
 	int ret = 0;
 	int caller = proc2pid(p);
 	MESSAGE *mla = (MESSAGE*)va2la(caller, m);
-	mla->source = caller;
+	mla->source = caller;/*此处添加消息的源头*/
 
 	if(SEND == function)
 	{

@@ -372,6 +372,7 @@ PUBLIC struct inode* get_inode(int dev, int inode_nr)
 		{
 			if(p->i_dev == dev && p->i_num == inode_nr)/*找到指定节点*/
 			{
+				p->i_cnt++;
 				return p;
 			}
 		}

@@ -77,8 +77,8 @@ PUBLIC int do_rdwt(MESSAGE *msg)
 		}
 		
 		int off = pos % SECTOR_SIZE;/*读/写位置在一个扇区内的偏移*/
-		int sect_beg = pNode->i_start_sect + (pos>>SECTOR_SIZE_SHIFT);/*扇区绝对起始（相对于硬盘）*/
-		int sect_end = pNode->i_start_sect + (pos_end>>SECTOR_SIZE_SHIFT);/*扇区绝对终止（相对于硬盘）*/
+		int sect_beg = pNode->i_start_sect + (pos>>SECTOR_SIZE_SHIFT);/*扇区绝对起始（相对于分区）*/
+		int sect_end = pNode->i_start_sect + (pos_end>>SECTOR_SIZE_SHIFT);/*扇区绝对终止（相对于分区）*/
 		int chunk = MIN(sect_end - sect_beg + 1, FSBUF_SIZE>>SECTOR_SIZE_SHIFT);/*一次读取的扇区数（不能超过文件系统的缓存大小）*/
 		int bytes_proc = 0;/*已经处理的字节数*/
 		int bytes_left = cnt;/*待处理字节数*/
