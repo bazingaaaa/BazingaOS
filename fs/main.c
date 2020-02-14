@@ -50,6 +50,12 @@ PUBLIC void task_fs()
 			case WRITE:
 				msg.CNT = do_rdwt(&msg);
 				break;
+			case UNLINK:
+				msg.RETVAL = do_unlink(&msg);
+				break;
+			default:
+				panic("fs unknown msg type");
+				break;
 		}
 		msg.type = SYSCALL_RET;
 		send_rec(SEND, src, &msg);

@@ -78,5 +78,5 @@ PUBLIC int strcmp(const char* s1, const char* s2)
 			return *p1 - *p2;
 		}
 	}
-	return 0;
+	return *p1 - *p2;
 }

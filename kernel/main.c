@@ -20,9 +20,8 @@ void testA()
 	int fd = open("/test", O_CREAT | O_RDWR);
 	int cnt1 = write(fd, input, sizeof(input));
 	close(fd);
-	fd = open("/test", O_RDWR);
-	int cnt2 = read(fd, buf, sizeof(input));
-	printf("buf:%s", buf);
+	int ret = unlink("/test");
+	printf("ret:%d\n", ret);
 	spin("testA");
 }
 
