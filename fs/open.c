@@ -72,7 +72,10 @@ PUBLIC int do_open(MESSAGE *msg)
 			return -1;
 		}
 		/*创建文件*/
-		pNode = create_file(path, flags);
+		if(0 == (pNode = create_file(path, flags)))
+		{
+			return -1;
+		}
 		inode_nr = pNode->i_num;
 	}
 	else/*读写文件*/

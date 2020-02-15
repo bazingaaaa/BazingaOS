@@ -131,8 +131,9 @@ PUBLIC int do_unlink(MESSAGE *msg)
 	{
 		RD_SECT(dev, sect_nr + i);
 		struct dir_entry* en = (struct dir_entry*)fsbuf;
-		for(j = 0;j < SECTOR_SIZE / DIR_ENT_SIZE && m < nr_dir;j++, en++, m++)
+		for(j = 0;j < SECTOR_SIZE / DIR_ENT_SIZE && m < nr_dir;j++, en++)
 		{
+			m++;/*必须在此处m++，不然break后m不会自增*/
 			if(inode_nr == en->inode_nr)
 			{
 				en->inode_nr = INVALID_INODE;

@@ -141,7 +141,7 @@ LOAD_FINISH:
 	jmp BaseOfLoader:OffsetOfLoader
 
 
-LOADER_NOT_FOUND:;未找到loader.bin 
+LOADER_NOT_FOUND:;未找到kernel.bin 
 	mov dh, 2
 	call Dispstr
 	jmp $
