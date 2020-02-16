@@ -14,6 +14,8 @@ void assertion_failure(char *exp, char *file, char *base_file, int line);
 #define assert(exp)
 #endif
 
+#define SET_RANGE(val, min, max) {val = val >= min ? val : min;\
+									val = val <= max ? val : max;}
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
 #define TRUE 1
@@ -141,8 +143,8 @@ enum msgtype {
 #define	DEVICE		u.m3.m3i4
 #define	POSITION	u.m3.m3l1
 #define	BUF		u.m3.m3p2
-/* #define	OFFSET		u.m3.m3i2 */
-/* #define	WHENCE		u.m3.m3i3 */
+#define	OFFSET		u.m3.m3i2
+#define	WHENCE		u.m3.m3i3
 
 #define	PID		u.m3.m3i2
 /* #define	STATUS		u.m3.m3i1 */
@@ -222,5 +224,9 @@ enum msgtype {
 
 #define	INVALID_INODE		0
 #define	ROOT_INODE			1
+
+#define SEEK_SET 0
+#define SEEK_CUR 1
+#define SEEK_END 2
 
 #endif

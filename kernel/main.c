@@ -20,10 +20,10 @@ void testA()
 
 	char filename[MAX_FILENAME_LEN+1] = "/blah";
 	const char bufw[] = "abcde";
-	const int rd_bytes = 3;
+	const int rd_bytes = 10;
 	char bufr[rd_bytes];
 
-	assert(rd_bytes <= strlen(bufw));
+	//assert(rd_bytes <= strlen(bufw));
 
 	/* create */
 	fd = open(filename, O_CREAT | O_RDWR);
@@ -34,42 +34,18 @@ void testA()
 	n = write(fd, bufw, strlen(bufw));
 	assert(n == strlen(bufw));
 
-	/* close */
-	close(fd);
+	int pos = lseek(fd, 0, SEEK_CUR);
+	lseek(fd, 3, SEEK_SET);
+	n = write(fd, bufw, strlen(bufw));
+	pos = lseek(fd, 0, SEEK_CUR);
+	pos = lseek(fd, 3, SEEK_SET);
 
-	/* open */
-	fd = open(filename, O_RDWR);
-	assert(fd != -1);
-	printf("File opened. fd: %d\n", fd);
-
-	/* read */
-	n = read(fd, bufr, rd_bytes);
-	assert(n == rd_bytes);
-	bufr[n] = 0;
-	printf("%d bytes read: %s\n", n, bufr);
+	n = read(fd, bufr, 10);
+	printf("cur pos:%d\n", pos);
+	printf("buf read bytes:%d content:%s\n", n, bufr);
 
 	/* close */
 	close(fd);
-
-	char * filenames[] = {"/foo", "/bar", "/baz"};
-
-	/* create files */
-	for (i = 0; i < sizeof(filenames) / sizeof(filenames[0]); i++) {
-		fd = open(filenames[i], O_CREAT | O_RDWR);
-		assert(fd != -1);
-		printf("File created: %s (fd %d)\n", filenames[i], fd);
-		close(fd);
-	}
-
-	char * rfilenames[] = {"/bar", "/foo", "/baz", "/dev_tty0"};
-
-	/* remove files */
-	for (i = 0; i < sizeof(rfilenames) / sizeof(rfilenames[0]); i++) {
-		if (unlink(rfilenames[i]) == 0)
-			printf("File removed: %s\n", rfilenames[i]);
-		else
-			printf("Failed to remove file: %s\n", rfilenames[i]);
-	}
 
 	spin("TestA");
 }

@@ -19,6 +19,11 @@ EXTERN int disp_pos;
 
 EXTERN int ticks;
 
+EXTERN	int	key_pressed; /**
+			      * used for clock_handler
+			      * to wake up TASK_TTY when
+			      * a key is pressed
+			      */
 EXTERN TSS tss;
 
 EXTERN TASK user_procs[NR_PROCS];

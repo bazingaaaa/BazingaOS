@@ -134,7 +134,7 @@ LOAD_ONE_SEC:
 	add ax, DeltaSecNo
 	add bx, word[BPB_BytesPerSec]
 	jmp LOAD_ONE_SEC
-	
+
 LOAD_FINISH:
 	mov dh, 1
 	call Dispstr

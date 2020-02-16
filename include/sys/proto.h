@@ -96,7 +96,6 @@ PUBLIC int rw_sector(int io_type, int dev, u64 pos, int bytes, int proc_nr, void
 /*fs/misc.c*/
 PUBLIC int strip_path(char* filename, struct inode **ppinode, const char* pathname);
 
-
 /*lib/misc.c*/
 PUBLIC int strcmp(const char* s1, const char* s2);
 PUBLIC int memcmp(const void *s1, const void *s2, int n);

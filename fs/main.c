@@ -53,6 +53,9 @@ PUBLIC void task_fs()
 			case UNLINK:
 				msg.RETVAL = do_unlink(&msg);
 				break;
+			case LSEEK:
+				msg.OFFSET = do_lseek(&msg);
+				break;
 			default:
 				panic("fs unknown msg type");
 				break;

@@ -301,7 +301,7 @@ sys_call:
   	add esp, 4 * 4
 
   	pop esi
-  	mov [esi + EAXREG - P_STACKBASE], eax
+  	mov [esi + EAXREG - P_STACKBASE], eax;准备返回值
 	cli
 	
 	ret
@@ -337,7 +337,7 @@ restart_reenter:
 	iretd;中断返回后eflags被置位
 
 save:
-	;sub esp, 4 无需在入栈操作，调用save时，save下一条命令已经自动入栈
+	;sub esp, 4 无需在入栈操作，call调用save时，save下一条命令已经自动入栈
 	;保存寄存器(上下文)
 	pushad
 	push ds

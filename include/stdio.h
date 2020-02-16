@@ -41,3 +41,7 @@ PUBLIC int write(int fd, const char* buf, int size);
 
 /*删除文件*/
 PUBLIC int unlink(const char* pathname);
+
+
+/*操作文件指针*/
+PUBLIC off_t lseek(int fd, off_t offset, int whence);

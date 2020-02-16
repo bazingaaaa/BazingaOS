@@ -150,7 +150,18 @@ LOAD_ONE_SEC:
 	push ax
 	add ax, RootDirSectors
 	add ax, DeltaSecNo
-	add bx, word[BPB_BytesPerSec]
+	add bx, word[BPB_BytesPerSec];需要判断是否超过64k
+	jc OVER_ONE_SEG
+	jmp NOT_OVER_ONE_SEG	
+
+OVER_ONE_SEG:
+	push ax
+	mov ax, es
+	add ax, 01000h
+	mov es, ax
+	pop ax
+
+NOT_OVER_ONE_SEG:
 	jmp LOAD_ONE_SEC
 	
 LOAD_FINISH:;加载完毕

@@ -95,7 +95,7 @@ PUBLIC void in_process(u32 key, TTY *p_tty)
 
 
 /*
-功能：
+功能：终端从键盘读取输入字符
 */
 PRIVATE void tty_do_read(TTY *p_tty)
 {

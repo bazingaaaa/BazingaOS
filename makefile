@@ -16,7 +16,7 @@ BAZINGAKERNEL = kernel/kernel.bin
 OBJS = kernel/kernel.o kernel/start.o lib/kliba.o lib/klib.o lib/string.o kernel/i8259a.o kernel/protect.o \
 		kernel/main.o kernel/global.o kernel/clock.o kernel/syscall.o kernel/proc.o kernel/keyboard.o kernel/tty.o \
 		kernel/console.o kernel/printf.o kernel/vsprintf.o lib/misc.o kernel/systask.o kernel/hd.o fs/main.o lib/open.o \
-		fs/misc.o lib/close.o fs/read_write.o fs/link.o fs/open.o lib/read.o lib/write.o lib/unlink.o 
+		fs/misc.o lib/close.o fs/read_write.o fs/link.o fs/open.o fs/lseek.o lib/read.o lib/write.o lib/unlink.o lib/lseek.o
 	
 
 
@@ -130,6 +130,9 @@ lib/syslog.o: lib/syslog.c
 lib/unlink.o: lib/unlink.c
 	$(CC) $(CFLAG) -o $@ $<
 
+lib/lseek.o: lib/lseek.c
+	$(CC) $(CFLAG) -o $@ $<
+
 fs/main.o: fs/main.c
 	$(CC) $(CFLAG) -o $@ $<
 	
@@ -146,4 +149,7 @@ fs/open.o: fs/open.c
 	$(CC) $(CFLAG) -o $@ $<
 
 fs/link.o: fs/link.c
+	$(CC) $(CFLAG) -o $@ $<
+
+fs/lseek.o: fs/lseek.c
 	$(CC) $(CFLAG) -o $@ $<

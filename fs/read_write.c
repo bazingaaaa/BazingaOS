@@ -50,17 +50,16 @@ PUBLIC int do_rdwt(MESSAGE *msg)
 
 	if(I_CHAR_SPECIAL == i_mode)/*字符文件,特殊处理，需要向相应的设备驱动程序发送消息*/
 	{
-		MESSAGE driver_msg;
-		driver_msg.type = msg->type == READ ? DEV_READ : DEV_WRITE; 
+		msg->type = msg->type == READ ? DEV_READ : DEV_WRITE; 
 		int dev = pNode->i_start_sect;
-		driver_msg.DEVICE = MINOR(dev);/*次设备号*/
-		driver_msg.BUF = msg->BUF;
-		driver_msg.CNT = msg->CNT;
-		driver_msg.PROC_NR = msg->source;
+		msg->DEVICE = MINOR(dev);/*次设备号*/
+		//msg->BUF = msg->BUF;
+		//msg->CNT = msg->CNT;
+		msg->PROC_NR = msg->source;/*此處需要告訴TTY終端是哪個進程需要讀/寫操作*/
 		assert(dd_map[MAJOR(dev)].driver_nr != INVALID_DRIVER);
-		send_rec(BOTH, dd_map[MAJOR(dev)].driver_nr, &driver_msg);
+		send_rec(BOTH, dd_map[MAJOR(dev)].driver_nr, msg);
 
-		return driver_msg.CNT;
+		return msg->CNT;
 	}
 	else/*非字符文件（普通文件）*/
 	{
@@ -93,6 +92,11 @@ PUBLIC int do_rdwt(MESSAGE *msg)
 
 			if(READ == msg->type)/*读取*/
 			{
+				if(pos_end <= pFd->fd_pos)
+				{
+					break;
+				}
+				bytes = MIN(pos_end - pFd->fd_pos, bytes);
 				phys_copy(va2la(msg->source, msg->BUF + bytes_proc), va2la(TASK_FS, fsbuf + off), bytes);
 			}
 			else/*写入*/
