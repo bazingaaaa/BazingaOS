@@ -56,12 +56,18 @@ PUBLIC void task_fs()
 			case LSEEK:
 				msg.OFFSET = do_lseek(&msg);
 				break;
+			case RESUME_PROC:/*解除进程阻塞*/
+				src = msg.PROC_NR;
+				break;
 			default:
 				panic("fs unknown msg type");
 				break;
 		}
-		msg.type = SYSCALL_RET;
-		send_rec(SEND, src, &msg);
+		if(SUSPEND_PROC != msg.type)
+		{
+			msg.type = SYSCALL_RET;
+			send_rec(SEND, src, &msg);
+		}	
 	}
 }
 

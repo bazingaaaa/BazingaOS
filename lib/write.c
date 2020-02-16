@@ -21,7 +21,8 @@ PUBLIC int write(int fd, const char* buf, int size)
 	driver_msg.type = WRITE; 
 	driver_msg.BUF = buf;
 	driver_msg.CNT = size;
-
+	driver_msg.FD = fd;
+	
 	send_rec(BOTH, TASK_FS, &driver_msg);
 
 	return driver_msg.CNT;

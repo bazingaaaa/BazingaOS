@@ -21,6 +21,10 @@ PUBLIC void clock_handler(int iqr)
 		return ;
 	}
 	schedule();
+	if(key_pressed)
+	{
+		inform_int(TASK_TTY);
+	}
 }
 
 

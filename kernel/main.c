@@ -15,39 +15,34 @@ u8 task_stack[STACK_SIZE_TOTAL];
 
 void testA()
 {
-	int fd;
-	int i, n;
+	char tty_name[] = "/dev_tty1";
+	int fd_stdin = open(tty_name, O_RDWR);
+	printf("fd_stdin:%d\n", fd_stdin);
+	//assert(0 == fd_stdin);
+	int fd_stdout = open(tty_name, O_RDWR);
+	//assert(1 == fd_stdout);
+	char rdbuf[128];
 
-	char filename[MAX_FILENAME_LEN+1] = "/blah";
-	const char bufw[] = "abcde";
-	const int rd_bytes = 10;
-	char bufr[rd_bytes];
+	while(1)
+	{
+		write(fd_stdout, "$ ", 2);
+		int n = read(fd_stdin, rdbuf, 70);
+		rdbuf[n] = 0;
 
-	//assert(rd_bytes <= strlen(bufw));
-
-	/* create */
-	fd = open(filename, O_CREAT | O_RDWR);
-	assert(fd != -1);
-	printf("File created: %s (fd %d)\n", filename, fd);
-
-	/* write */
-	n = write(fd, bufw, strlen(bufw));
-	assert(n == strlen(bufw));
-
-	int pos = lseek(fd, 0, SEEK_CUR);
-	lseek(fd, 3, SEEK_SET);
-	n = write(fd, bufw, strlen(bufw));
-	pos = lseek(fd, 0, SEEK_CUR);
-	pos = lseek(fd, 3, SEEK_SET);
-
-	n = read(fd, bufr, 10);
-	printf("cur pos:%d\n", pos);
-	printf("buf read bytes:%d content:%s\n", n, bufr);
-
-	/* close */
-	close(fd);
-
-	spin("TestA");
+		if(strcmp(rdbuf, "hello") == 0)
+		{
+			write(fd_stdout, "hello world!\n", 13);
+		}
+		else
+		{
+			if(rdbuf[0])
+			{
+				write(fd_stdout, "{", 1);
+				write(fd_stdout, rdbuf, n);
+				write(fd_stdout, "}\n", 2);
+			}
+		}
+	}
 }
 
 
@@ -179,12 +174,12 @@ PUBLIC void kernel_main()
 	proc_table[6].nr_tty = 2;
 
 	/*清屏*/
-	// disp_pos = 0;
-	// for(i = 0;i < 80 * 25;i++)
-	// {
-	// 	disp_str(" ");
-	// }
-	// disp_pos = 0;
+	disp_pos = 0;
+	for(i = 0;i < 80 * 25;i++)
+	{
+		disp_str(" ");
+	}
+	disp_pos = 0;
 
 	init_clock();
 	

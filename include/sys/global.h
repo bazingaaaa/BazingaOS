@@ -19,7 +19,7 @@ EXTERN int disp_pos;
 
 EXTERN int ticks;
 
-EXTERN	int	key_pressed; /**
+EXTERN int key_pressed; /**
 			      * used for clock_handler
 			      * to wake up TASK_TTY when
 			      * a key is pressed

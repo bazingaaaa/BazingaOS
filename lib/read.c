@@ -21,7 +21,8 @@ PUBLIC int read(int fd, char* buf, int size)
 	driver_msg.type = READ; 
 	driver_msg.BUF = buf;
 	driver_msg.CNT = size;
-
+	driver_msg.FD = fd;
+	
 	send_rec(BOTH, TASK_FS, &driver_msg);
 
 	return driver_msg.CNT;
