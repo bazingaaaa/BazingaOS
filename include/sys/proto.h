@@ -68,7 +68,8 @@ PUBLIC int sprintf(char* buf, const char* fmt, ...);
 
 /*printf.c*/
 PUBLIC void printf(char *fmt, ...);
-#define	printl	printf
+PUBLIC void printl(char *fmt, ...);
+
 
 
 /*misc.h*/

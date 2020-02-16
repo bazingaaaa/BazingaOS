@@ -27,7 +27,7 @@ PUBLIC void assertion_failure(char *exp, char *file, char *base_file, int line)
 */
 PUBLIC void spin(char *func_name)
 {
-	printf("\nspinning in %s......\n", func_name);
+	printl("\nspinning in %s......\n", func_name);
 	while(1){}
 }
 

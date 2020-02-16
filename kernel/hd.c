@@ -236,7 +236,7 @@ PRIVATE void hd_open(int device)
 {
 	int drive = DRV_OF_DEV(device);
 
-	printf("hd_open device:%d   drive:%d\n", device, drive);
+	//printf("hd_open device:%d   drive:%d\n", device, drive);
 
 	/*只有一个硬盘*/
 	assert(drive == 0);
@@ -388,7 +388,7 @@ PRIVATE void hd_close(int device)
 {
 	int drive = DRV_OF_DEV(device);
 
-	printf("hd_close device:%d   drive:%d\n", device, drive);
+	//printf("hd_close device:%d   drive:%d\n", device, drive);
 
 	/*只有一个硬盘*/
 	assert(drive == 0);

@@ -17,7 +17,7 @@ void testA()
 {
 	char tty_name[] = "/dev_tty1";
 	int fd_stdin = open(tty_name, O_RDWR);
-	printf("fd_stdin:%d\n", fd_stdin);
+	//printf("fd_stdin:%d\n", fd_stdin);
 	//assert(0 == fd_stdin);
 	int fd_stdout = open(tty_name, O_RDWR);
 	//assert(1 == fd_stdout);
@@ -31,15 +31,13 @@ void testA()
 
 		if(strcmp(rdbuf, "hello") == 0)
 		{
-			write(fd_stdout, "hello world!\n", 13);
+			printf("hello world!\n");
 		}
 		else
 		{
 			if(rdbuf[0])
 			{
-				write(fd_stdout, "{", 1);
-				write(fd_stdout, rdbuf, n);
-				write(fd_stdout, "}\n", 2);
+				printf("{%s}\n", rdbuf);
 			}
 		}
 	}
