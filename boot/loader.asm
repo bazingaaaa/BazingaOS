@@ -318,15 +318,6 @@ LABEL_PM_START:
 	mov al, 'P'
 	mov [gs:edi], ax
 
-	;保存启动参数（BOOT_PARAMS）
-	mov dword [BOOT_PARAM_ADDR], BOOT_PARAM_MAGIC
-	mov eax, [dwMemSize]
-	mov dword [BOOT_PARAM_ADDR + 4], eax
-	mov eax, KERNEL_FILE_SEG
-	shl eax, 4
-	add eax, KERNEL_FILE_OFF
-	mov dword [BOOT_PARAM_ADDR + 8], eax
-
 	;输出内存信息
 	push szMemChkTitle
 	call DispStr
@@ -339,6 +330,15 @@ LABEL_PM_START:
 	;装载内核，对内核的代码段和数据段进行装载
 	call InitKernel
 	
+	;保存启动参数（BOOT_PARAMS）
+	mov dword [BOOT_PARAM_ADDR], BOOT_PARAM_MAGIC
+	mov eax, [dwMemSize]
+	mov dword [BOOT_PARAM_ADDR + 4], eax
+	mov eax, KERNEL_FILE_SEG
+	shl eax, 4
+	add eax, KERNEL_FILE_OFF
+	mov dword [BOOT_PARAM_ADDR + 8], eax
+		
 	jmp SelectorFlatC:KernelEntryPointPhyAdr
 ;END of [SECTION .text]
 

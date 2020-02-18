@@ -92,7 +92,7 @@ PUBLIC void* va2la(int pid, void* va)
 	PROCESS *p = &proc_table[pid];
 	u32 la = (u32)va + ldt_seg_linear(p, INDEX_LDT_RW);
 
-	if(pid < NR_TASKS + NR_PROCS)
+	if(pid < NR_TASKS + NR_NATIVE_PROCS)
 	{
 		assert(la == (u32)va);
 	}

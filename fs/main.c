@@ -18,7 +18,7 @@ PRIVATE void set_smap();
 PRIVATE void set_inode_array();
 PRIVATE void set_root_de();
 PRIVATE void read_super_block(int dev);
-PUBLIC struct super_block* get_super_block(int dev);
+PRIVATE int fs_fork(MESSAGE *msg);
 
 
 struct super_block sb;/*临时存放超级块信息*/
@@ -58,6 +58,9 @@ PUBLIC void task_fs()
 				break;
 			case RESUME_PROC:/*解除进程阻塞*/
 				src = msg.PROC_NR;
+				break;
+			case FORK:
+				fs_fork(&msg);
 				break;
 			default:
 				panic("fs unknown msg type");
@@ -455,4 +458,13 @@ PUBLIC void sync_inode(struct inode *pNode)
 	pDst->i_nr_sects = pNode->i_nr_sects;
 
 	WR_SECT(dev, sect_nr);
+}
+
+
+/*
+功能：完成文件系统和fork有关的部分
+*/
+PRIVATE int fs_fork(MESSAGE *msg)
+{
+	return 0;
 }

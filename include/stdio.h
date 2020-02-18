@@ -45,3 +45,7 @@ PUBLIC int unlink(const char* pathname);
 
 /*操作文件指针*/
 PUBLIC off_t lseek(int fd, off_t offset, int whence);
+
+
+/*创建进程*/
+PUBLIC int fork();

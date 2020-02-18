@@ -117,7 +117,8 @@ PUBLIC void kernel_main()
 			privilege = PRIVILEGE_USER;
 		}
 		
-		if(strcmp(p_proc->p_name, "INIT") == 0)/*INIT进程的内存分布*/
+		//if(strcmp(p_proc->p_name, "INIT") == 0)/*INIT进程的内存分布*/
+		if(i == NR_TASKS)/*INIT进程的内存分布*/
 		{
 			int base, limit;
 			int ret = get_kernel_map(&base, &limit);
@@ -248,8 +249,23 @@ PUBLIC int get_ticks()
 */
 PUBLIC void Init()
 {
+	/*首先打开终端文件（fd为0代表输入 fd为1代表输出）*/
+	char tty_name[] = "/dev_tty1";
+	int fd_stdin = open(tty_name, O_RDWR);
+	int fd_stdout = open(tty_name, O_RDWR);
+	int pid;
+
+	pid = fork();
+	if(pid != 0)
+	{
+		printf("this is parent proc, pid of child is %d\n", pid);
+	}
+	else
+	{
+		printf("this is child proc\n");
+	}
+
 	while(1)
 	{
-
 	}
 }

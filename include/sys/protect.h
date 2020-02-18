@@ -54,6 +54,11 @@ typedef struct s_tss
 }TSS;
 
 
+#define	reassembly(high, high_shift, mid, mid_shift, low)	\
+	(((high) << (high_shift)) +				\
+	 ((mid)  << (mid_shift)) +				\
+	 (low))
+
 /*描述符类型*/
 #define DA_32		0x4000
 

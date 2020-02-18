@@ -89,4 +89,7 @@ typedef struct s_task
 						+STACK_SIZE_TASKTFS\
 						+STACK_SIZE_TASKMM)
 
+#define PROC_ALLOC_BASE 		0xA00000/*进程内存分配起始10Mb*/
+#define PROC_DEFAULT_IMG_SIZE	0x100000/*进程默认映像大小1Mb*/
+
 #endif

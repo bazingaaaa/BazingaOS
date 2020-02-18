@@ -82,7 +82,8 @@ void assertion_failure(char *exp, char *file, char *base_file, int line);
 #define TASK_TTY 1
 #define TASK_HD 2
 #define TASK_FS 3
-#define TASK_MM 4									
+#define TASK_MM 4
+
 
 
 #define ANY	(NR_TASKS + NR_PROCS + 10)
@@ -230,7 +231,5 @@ enum msgtype {
 #define SEEK_SET 0
 #define SEEK_CUR 1
 #define SEEK_END 2
-
-
 
 #endif
