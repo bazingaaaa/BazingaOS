@@ -10,6 +10,9 @@
 #include "keyboard.h"
 #include "string.h"
 
+#define TTY_FIRST	(tty_table)
+#define TTY_END		(tty_table + NR_CONSOLES)
+
 PRIVATE void tty_dev_read(TTY *p_tty);
 PRIVATE void tty_dev_write(TTY *p_tty);
 PRIVATE void init_tty();
@@ -242,17 +245,6 @@ PUBLIC void tty_write(TTY *p_tty, char* buf, int len)
 
 
 /*
-功能：进程将缓存区中的内容输出至对应的控制台
-备注：系统调用
-*/
-PUBLIC void sys_write(char* buf, int len, PROCESS *p_proc)
-{
-	TTY *p_tty = &tty_table[p_proc->nr_tty];
-	tty_write(p_tty, buf, len);
-}
-
-
-/*
 功能：输出缓存区内容至控制台
 备注：新的打印函数，需要区分ring1～3和ring0，并且需要检查打印的字符串中是否有magic no，如果有的话需要进行
 	异常处理, 
@@ -311,7 +303,7 @@ PUBLIC void sys_printx(int unused1, int unused2, char* s, PROCESS *proc)
 		{	
 			continue;
 		}
-		out_char(ch, tty_table[proc->nr_tty].p_con);
+		out_char(ch, TTY_FIRST->p_con);
 	}
 }
 

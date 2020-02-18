@@ -50,7 +50,7 @@ typedef struct s_proc
 	struct proc *q_sending;/*发送消息至当前进程的进程队列*/
 	struct proc *next_sending;/*进程队列中的下一个进程*/
 
-	u32 nr_tty;/*进程对应的终端号*/
+	int p_parent; /*父进程的pid*/
 
 	struct file_desc *filp[NR_FILES];
 }PROCESS;
@@ -70,6 +70,7 @@ typedef struct s_task
 #define NR_SYS_CALLS 128
 
 #define STACK_SIZE 0x8000/*栈空间不能太小，栈溢出可能导致各种异常*/
+#define STACK_SIZE_INIT STACK_SIZE
 #define STACK_SIZE_TESTA STACK_SIZE
 #define STACK_SIZE_TESTB STACK_SIZE
 #define STACK_SIZE_TESTC STACK_SIZE
@@ -77,6 +78,15 @@ typedef struct s_task
 #define STACK_SIZE_TASKSYS STACK_SIZE
 #define STACK_SIZE_TASKTHD STACK_SIZE
 #define STACK_SIZE_TASKTFS STACK_SIZE
-#define STACK_SIZE_TOTAL (STACK_SIZE_TESTA+STACK_SIZE_TESTB+STACK_SIZE_TESTC+STACK_SIZE_TASKTTY+STACK_SIZE_TASKSYS+STACK_SIZE_TASKTHD+STACK_SIZE_TASKTFS)
+#define STACK_SIZE_TASKMM STACK_SIZE
+#define STACK_SIZE_TOTAL (STACK_SIZE_INIT\
+						+STACK_SIZE_TESTA\
+						+STACK_SIZE_TESTB\
+						+STACK_SIZE_TESTC\
+						+STACK_SIZE_TASKTTY\
+						+STACK_SIZE_TASKSYS\
+						+STACK_SIZE_TASKTHD\
+						+STACK_SIZE_TASKTFS\
+						+STACK_SIZE_TASKMM)
 
 #endif

@@ -15,6 +15,7 @@ u8 task_stack[STACK_SIZE_TOTAL];
 
 void testA()
 {
+	int base, limit;
 	char tty_name[] = "/dev_tty1";
 	int fd_stdin = open(tty_name, O_RDWR);
 	//printf("fd_stdin:%d\n", fd_stdin);
@@ -23,6 +24,8 @@ void testA()
 	//assert(1 == fd_stdout);
 	char rdbuf[128];
 
+	//get_kernel_map(&base, &limit);
+	//printf("base:0x%x limit:0x%x\n", base, limit);
 	while(1)
 	{
 		write(fd_stdout, "$ ", 2);
@@ -78,10 +81,10 @@ void testC()
 PUBLIC void kernel_main()
 {
 	disp_str("------\"kernel_main\" begins------\n");
-	int i;
+	int i, j;
 	PROCESS *p_proc = proc_table;
 	TASK *p_task = task_table;
-	u16 seletor_ldt = SELECTOR_LDT_FIRST;
+	//u16 seletor_ldt = SELECTOR_LDT_FIRST;
 	char* p_stack = task_stack + STACK_SIZE_TOTAL;/*指向栈顶*/
 	u32 eflags;
 	u32 rpl;
@@ -89,28 +92,50 @@ PUBLIC void kernel_main()
 
 	for(i = 0;i < NR_TASKS + NR_PROCS;i++)
 	{
-		if(i < NR_TASKS)/*首先是系统任务*/
+		strcpy(p_proc->p_name, p_task->name);
+		/*初始化进程表中的局部描述符信息,ldt中的第0和第1个段描述符*/
+		//p_proc->ldt_sel = seletor_ldt;/*该进程的ldt在gdt中的位置，切换时加载用*/
+		p_proc->pid = i;
+
+		if(i >= NR_TASKS + NR_NATIVE_PROCS)/*空闲进程表项*/
+		{
+			p_proc->p_flags = FREE_SLOT;
+			continue;
+		}
+		else if(i < NR_TASKS)/*首先是系统任务*/
 		{
 			p_task = &task_table[i];
 			eflags = 0x1202;
 			rpl = SA_RPL1;
 			privilege = PRIVILEGE_TASK;
 		}
-		else
+		else/*用户进程*/
 		{
 			p_task = &user_procs[i - NR_TASKS];
 			eflags = 0x202;
 			rpl = SA_RPL3;
 			privilege = PRIVILEGE_USER;
 		}
-		strcpy(p_proc->p_name, p_task->name);
-		/*初始化进程表中的局部描述符信息,ldt中的第0和第1个段描述符*/
-		p_proc->ldt_sel = seletor_ldt;
-		p_proc->pid = i;
-		memcpy((char*)&p_proc->ldts[0], (char*)&gdt[SELECTOR_KERNEL_CS>>3], sizeof(DESCRIPTOR));
-		p_proc->ldts[0].attrl = DA_C | privilege<<5;
-		memcpy((char*)&p_proc->ldts[1], (char*)&gdt[SELECTOR_KERNEL_DS>>3], sizeof(DESCRIPTOR));
-		p_proc->ldts[1].attrl = DA_DRW | privilege<<5;
+		
+		if(strcmp(p_proc->p_name, "INIT") == 0)/*INIT进程的内存分布*/
+		{
+			int base, limit;
+			int ret = get_kernel_map(&base, &limit);
+			if(0 != ret)
+			{
+				return;
+			}
+			init_descriptor(&p_proc->ldts[INDEX_LDT_C], 0, (base + limit)>>LIMIT_4K_SHIFT, DA_32 | DA_C | privilege<<5 | DA_LIMIT_4K);
+			init_descriptor(&p_proc->ldts[INDEX_LDT_RW], 0, (base + limit)>>LIMIT_4K_SHIFT, DA_32 | DA_DRW | privilege<<5 | DA_LIMIT_4K);
+		}
+		else/*普通进程的内存分布*/
+		{
+			memcpy((char*)&p_proc->ldts[0], (char*)&gdt[SELECTOR_KERNEL_CS>>3], sizeof(DESCRIPTOR));/*为进程分配内存空间*/
+			p_proc->ldts[0].attrl = DA_C | privilege<<5;
+			memcpy((char*)&p_proc->ldts[1], (char*)&gdt[SELECTOR_KERNEL_DS>>3], sizeof(DESCRIPTOR));/*为进程分配内存空间*/
+			p_proc->ldts[1].attrl = DA_DRW | privilege<<5;	
+		}
+		
 		p_proc->regs.gs = SELECTOR_KERNEL_GS & SA_RPL_MASK | rpl;/*位于gdt中*/
 		p_proc->regs.cs = rpl | SA_TIL;
 		p_proc->regs.fs = 8 | rpl | SA_TIL;
@@ -122,6 +147,7 @@ PUBLIC void kernel_main()
 		p_proc->regs.esp = (u32)p_stack;/*指向栈顶*/
 		//p_proc->regs.esp = (u32)task_stack[i];/*指向栈顶*/
 		p_proc->regs.eflags = eflags;
+		p_proc->p_parent = NO_TASK;
 
 		p_proc->p_flags = 0;/*一定要进行初始化，不然会被阻塞*/
 		p_proc->p_recvfrom = NO_TASK;
@@ -132,10 +158,11 @@ PUBLIC void kernel_main()
 		p_proc->p_msg = 0;
 
 		p_stack = p_stack - p_task->stacksize;
-		seletor_ldt += 8;
+		//seletor_ldt += 8;
 		p_proc++;
-		//p_task++;
-		
+
+		/*初始化文件描述符*/
+		memset(p_proc->filp, 0, sizeof(struct file_desc*) * NR_FILES);
 	}
 
 	/*设置时钟中断相关*/
@@ -154,8 +181,8 @@ PUBLIC void kernel_main()
 	proc_table[3].priority = 15;
 	proc_table[3].ticks = 15;
 
-	proc_table[4].priority = 5;
-	proc_table[4].ticks = 5;
+	proc_table[4].priority = 15;
+	proc_table[4].ticks = 15;
 	
 	proc_table[5].priority = 5;
 	proc_table[5].ticks = 5;
@@ -163,14 +190,9 @@ PUBLIC void kernel_main()
 	proc_table[6].priority = 5;
 	proc_table[6].ticks = 5;
 
-	proc_table[0].nr_tty = 0;
-	proc_table[1].nr_tty = 0;
-	proc_table[2].nr_tty = 0;
-	proc_table[3].nr_tty = 0;
-	proc_table[4].nr_tty = 1;
-	proc_table[5].nr_tty = 2;
-	proc_table[6].nr_tty = 2;
-
+	proc_table[7].priority = 5;
+	proc_table[7].ticks = 5;
+	
 	/*清屏*/
 	disp_pos = 0;
 	for(i = 0;i < 80 * 25;i++)
@@ -221,3 +243,13 @@ PUBLIC int get_ticks()
 }
 
 
+/*
+功能：初始进程
+*/
+PUBLIC void Init()
+{
+	while(1)
+	{
+
+	}
+}

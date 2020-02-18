@@ -15,6 +15,7 @@ PUBLIC void put_irq_handler(int irq, irq_handler handler);
 PUBLIC void testA();
 PUBLIC void testB();
 PUBLIC void testC();
+PUBLIC void Init();
 
 PUBLIC void spurious_irq(int irq);
 PUBLIC void clock_handler(int iqr);
@@ -24,6 +25,9 @@ PUBLIC void init_clock();
 PUBLIC void init_keyboard();
 PUBLIC void keyboard_read(TTY *p_tty);
 
+
+/*protect.c*/
+PUBLIC void init_descriptor(DESCRIPTOR *pDes, u32 base, u32 limit, u16 attr);
 
 /*proc.c*/
 PUBLIC int sys_get_ticks();
@@ -48,7 +52,6 @@ PUBLIC int printx(char* buf);
 /*tty.c*/
 PUBLIC void task_tty();
 PUBLIC void in_process(u32 key, TTY *p_tty);
-PUBLIC void sys_write(char* buf, int len, PROCESS *p_proc);
 PUBLIC void sys_printx(int unused1, int unused2, char* s, PROCESS *proc);
 
 
@@ -100,4 +103,13 @@ PUBLIC int strip_path(char* filename, struct inode **ppinode, const char* pathna
 /*lib/misc.c*/
 PUBLIC int strcmp(const char* s1, const char* s2);
 PUBLIC int memcmp(const void *s1, const void *s2, int n);
+
+
+/*mm/main.c*/
+PUBLIC void task_mm();
+
+
+/*lib/klib.c*/
+PUBLIC int get_kernel_map(unsigned int * b, unsigned int * l);
+PUBLIC void get_boot_param(struct boot_params* pbp);
 

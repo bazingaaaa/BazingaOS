@@ -45,7 +45,7 @@ struct inode
 
 	/*内存中可见*/
 	int i_dev;/*设备号*/
-	int i_cnt;
+	int i_cnt;/*共享该inode的进程数*/
 	int i_num;/*node_nr*/
 };
 
@@ -54,6 +54,7 @@ struct file_desc
 {
 	int fd_mode;/*读/写*/
 	int fd_pos;/*当前读/写位置*/
+	int fd_cnt;/*共享文件描述符的进程数*/
 	struct inode *fd_inode;/*指向inode的指针*/
 };
 

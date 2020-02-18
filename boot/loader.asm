@@ -172,6 +172,7 @@ LOAD_FINISH:;加载完毕
 	mov ebx, 0
 	mov di, _MemChkBuf;实模式下ds = cs，而_MemChkBuf 代表的是在代码段内的偏移，代码段和数据段地址相同（必须相同），故可直接
 					  ;通过段内偏移进行访问
+
 .loop:
 	mov eax, 0E820h
 	mov ecx, 20;/*代表结构体大小*/
@@ -316,6 +317,15 @@ LABEL_PM_START:
  	mov ah, 0Ch   ; 0000: 黑底    1100: 红字
 	mov al, 'P'
 	mov [gs:edi], ax
+
+	;保存启动参数（BOOT_PARAMS）
+	mov dword [BOOT_PARAM_ADDR], BOOT_PARAM_MAGIC
+	mov eax, [dwMemSize]
+	mov dword [BOOT_PARAM_ADDR + 4], eax
+	mov eax, KERNEL_FILE_SEG
+	shl eax, 4
+	add eax, KERNEL_FILE_OFF
+	mov dword [BOOT_PARAM_ADDR + 8], eax
 
 	;输出内存信息
 	push szMemChkTitle

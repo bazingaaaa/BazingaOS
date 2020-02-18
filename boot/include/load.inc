@@ -13,3 +13,11 @@ KernelEntryPointPhyAdr	equ 	030400h
 PageDirBase			equ 	0100000h;1M
 PageTblBase			equ 	0101000h;1M + 4K
 
+
+KERNEL_FILE_SEG		equ    BaseOfKernel
+KERNEL_FILE_OFF		equ	   OffsetOfKernel	 
+
+
+;loader存放启动参数的物理地址
+BOOT_PARAM_ADDR		equ	0x900
+BOOT_PARAM_MAGIC	equ	0xB007

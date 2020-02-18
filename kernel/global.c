@@ -18,9 +18,11 @@ PUBLIC TASK task_table[NR_TASKS] = {
 	{task_tty, STACK_SIZE_TASKTTY, "task_tty"},
 	{task_hd, STACK_SIZE_TASKTHD, "task_hd"},
 	{task_fs, STACK_SIZE_TASKTFS, "task_fs"},
+	{task_mm, STACK_SIZE_TASKMM, "task_mm"}
 };
 
 PUBLIC TASK user_procs[NR_PROCS]={
+	{Init,  STACK_SIZE_INIT,  "INIT"},
 	{testA, STACK_SIZE_TESTA, "testA"},
 	{testB, STACK_SIZE_TESTB, "testB"},
 	{testC, STACK_SIZE_TESTC, "testC"}

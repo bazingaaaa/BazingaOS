@@ -137,4 +137,6 @@ typedef struct s_tss
 
 #define vir2phy(seg_base, offset) (u32)(((u32)seg_base) + ((u32)offset)) 
 
+#define LIMIT_4K_SHIFT 12
+
 #endif

@@ -70,7 +70,7 @@ PRIVATE void init_idt_desc(u8 vector, u8 desc_type, int_handler handler,u8 privi
 /*
 功能：初始化段描述符
 */
-PRIVATE void init_descriptor(DESCRIPTOR *pDes, u32 base, u32 limit, u16 attr)
+PUBLIC void init_descriptor(DESCRIPTOR *pDes, u32 base, u32 limit, u16 attr)
 {
 	pDes->limit_low = limit & 0xffff;
 	pDes->base_low = base & 0xffff;
@@ -184,6 +184,8 @@ void init_prot()
 	int ldt_index = INDEX_LDT_FIRST;
 	for(i = 0;i < NR_TASKS + NR_PROCS;i++)
 	{
+		memset(p_proc, 0, sizeof(PROCESS));
+		p_proc->ldt_sel = ldt_index<<3;
 		init_descriptor(&gdt[ldt_index], vir2phy(seg2addr(SELECTOR_KERNEL_DS), (u32)p_proc->ldts), sizeof(DESCRIPTOR) * LDT_SIZE - 1, DA_LDT);
 		ldt_index++;
 		p_proc++;

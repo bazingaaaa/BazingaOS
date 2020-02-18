@@ -62,9 +62,10 @@ void assertion_failure(char *exp, char *file, char *base_file, int line);
 #define NR_TTYS 3
 #define NR_CONSOLES	3	/* consoles */
 
-/*最大任务数，暂定为4*/
-#define NR_TASKS 4
-#define NR_PROCS 3
+/*任务数/总进程数/本地进程数*/
+#define NR_TASKS 5
+#define NR_PROCS 32
+#define NR_NATIVE_PROCS 4
 
 #define FIRST_PROC	proc_table[0]
 #define LAST_PROC	proc_table[NR_TASKS + NR_PROCS - 1]
@@ -81,6 +82,7 @@ void assertion_failure(char *exp, char *file, char *base_file, int line);
 #define TASK_TTY 1
 #define TASK_HD 2
 #define TASK_FS 3
+#define TASK_MM 4									
 
 
 #define ANY	(NR_TASKS + NR_PROCS + 10)
@@ -228,5 +230,7 @@ enum msgtype {
 #define SEEK_SET 0
 #define SEEK_CUR 1
 #define SEEK_END 2
+
+
 
 #endif

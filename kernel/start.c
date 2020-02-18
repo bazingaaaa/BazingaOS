@@ -18,7 +18,7 @@ void cstart()
 	disp_color_str("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 		 "-----\"cstart\" begins-----\n", text_color);
 
-	/*准备gdt的地址*/
+	/*准备gdt的地址,可以说是把gdt迁移到C语言文件中可以访问到的全局变量中*/
 	memcpy((void*)&gdt, (void*)(*((u32*)(&gdt_ptr[2]))), *(u16*)(&gdt_ptr[0]) + 1);
 	u16* p_gdt_len = (u16*)(&gdt_ptr[0]);
 	u32* p_gdt_addr = (u32*)(&gdt_ptr[2]);
