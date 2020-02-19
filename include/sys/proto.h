@@ -113,3 +113,10 @@ PUBLIC void task_mm();
 PUBLIC int get_kernel_map(unsigned int * b, unsigned int * l);
 PUBLIC void get_boot_param(struct boot_params* pbp);
 
+/*mm/main.c*/
+PUBLIC int alloc_mem(int pid, int mem_size);
+
+/*mm/forkexit.c*/
+PUBLIC int do_fork(MESSAGE *msg);
+PUBLIC void do_exit(MESSAGE *msg);
+PUBLIC void do_wait(MESSAGE *msg);

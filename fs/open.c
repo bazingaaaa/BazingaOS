@@ -97,6 +97,7 @@ PUBLIC int do_open(MESSAGE *msg)
 	/*将文件描述符和inode绑定*/
 	fd_table[i].fd_inode = pNode;
 
+	fd_table[i].fd_cnt = 1;
 	fd_table[i].fd_mode = flags;
 	fd_table[i].fd_pos = 0;
 

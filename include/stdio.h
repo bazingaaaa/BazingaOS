@@ -49,3 +49,12 @@ PUBLIC off_t lseek(int fd, off_t offset, int whence);
 
 /*创建进程*/
 PUBLIC int fork();
+
+
+/*等待子进程结束*/
+PUBLIC int wait(int *status);
+
+
+/*进程退出*/
+PUBLIC void exit(int status);
+

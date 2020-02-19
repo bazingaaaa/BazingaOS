@@ -19,6 +19,7 @@ PRIVATE void set_inode_array();
 PRIVATE void set_root_de();
 PRIVATE void read_super_block(int dev);
 PRIVATE int fs_fork(MESSAGE *msg);
+PRIVATE void fs_exit(MESSAGE *msg);
 
 
 struct super_block sb;/*临时存放超级块信息*/
@@ -61,6 +62,9 @@ PUBLIC void task_fs()
 				break;
 			case FORK:
 				fs_fork(&msg);
+				break;
+			case EXIT:
+				fs_exit(&msg);
 				break;
 			default:
 				panic("fs unknown msg type");
@@ -466,5 +470,39 @@ PUBLIC void sync_inode(struct inode *pNode)
 */
 PRIVATE int fs_fork(MESSAGE *msg)
 {
+	int i;
+	PROCESS *p = &proc_table[msg->PID];
+	for(i = 0;i < NR_FILES;i++)
+	{
+		if(p->filp[i])/*有效描述符引用计数加1*/
+		{
+			p->filp[i]->fd_cnt++;
+			p->filp[i]->fd_inode->i_cnt++;
+		}
+	}
 	return 0;
+}
+
+
+/*
+功能：完成进程退出文件系统部分
+*/
+PRIVATE void fs_exit(MESSAGE *msg)
+{
+	int i;
+	PROCESS *p = &proc_table[msg->PID];
+
+	for(i = 0;i < NR_FILES;i++)
+	{
+		if(!p->filp[i])
+		{
+			continue;
+		}
+		p->filp[i]->fd_inode->i_cnt--;
+		if(--p->filp[i]->fd_cnt == 0)
+		{
+			p->filp[i]->fd_inode = 0;/*释放文件描述符*/
+		}
+		p->filp[i] = 0;
+	}
 }

@@ -95,7 +95,6 @@ PUBLIC void kernel_main()
 		strcpy(p_proc->p_name, p_task->name);
 		/*初始化进程表中的局部描述符信息,ldt中的第0和第1个段描述符*/
 		//p_proc->ldt_sel = seletor_ldt;/*该进程的ldt在gdt中的位置，切换时加载用*/
-		p_proc->pid = i;
 
 		if(i >= NR_TASKS + NR_NATIVE_PROCS)/*空闲进程表项*/
 		{
@@ -259,10 +258,17 @@ PUBLIC void Init()
 	if(pid != 0)
 	{
 		printf("this is parent proc, pid of child is %d\n", pid);
+		int s;
+		int child;
+		if(0 <=	(child = wait(&s)))
+		{
+			printf("child:%d exit with status:%d\n", child, s);
+		}
 	}
 	else
 	{
 		printf("this is child proc\n");
+		exit(123);
 	}
 
 	while(1)

@@ -13,13 +13,13 @@ LDFLAG = -s -Ttext $(ENTRY_POINT) -m elf_i386
 
 BAZINGABOOT = boot/boot.bin boot/loader.bin
 BAZINGAKERNEL = kernel/kernel.bin
-OBJS = kernel/kernel.o kernel/start.o lib/kliba.o lib/klib.o lib/string.o kernel/i8259a.o kernel/protect.o \
-		kernel/main.o kernel/global.o kernel/clock.o kernel/syscall.o kernel/proc.o kernel/keyboard.o kernel/tty.o \
-		kernel/console.o kernel/printf.o kernel/vsprintf.o lib/misc.o kernel/systask.o kernel/hd.o fs/main.o lib/open.o \
-		fs/misc.o lib/close.o lib/fork.o fs/read_write.o fs/link.o fs/open.o fs/lseek.o lib/read.o lib/write.o lib/unlink.o lib/lseek.o\
-		mm/main.o
+LOBJS = lib/close.o lib/fork.o lib/kliba.o lib/klib.o lib/string.o lib/misc.o lib/open.o\
+		lib/read.o lib/write.o lib/unlink.o lib/lseek.o lib/wait.o lib/exit.o
+OBJS = kernel/kernel.o kernel/start.o  kernel/i8259a.o kernel/protect.o kernel/keyboard.o kernel/tty.o \
+		kernel/main.o kernel/global.o kernel/clock.o kernel/syscall.o kernel/proc.o \
+		kernel/console.o kernel/printf.o kernel/vsprintf.o  kernel/systask.o kernel/hd.o fs/main.o \
+		fs/misc.o fs/read_write.o fs/link.o fs/open.o fs/lseek.o mm/main.o mm/forkexit.o $(LOBJS)
 	
-
 
 .PHONY = everything clean realclean all buildimg
 
@@ -98,6 +98,34 @@ kernel/hd.o: kernel/hd.c
 kernel/protect.o: kernel/protect.c
 	$(CC) $(CFLAG) -o $@ $<
 
+
+fs/main.o: fs/main.c
+	$(CC) $(CFLAG) -o $@ $<
+	
+fs/misc.o: fs/misc.c
+	$(CC) $(CFLAG) -o $@ $<
+
+fs/read_write.o: fs/read_write.c
+	$(CC) $(CFLAG) -o $@ $<
+
+fs/disklog.o: fs/disklog.c
+	$(CC) $(CFLAG) -o $@ $<
+
+fs/open.o: fs/open.c
+	$(CC) $(CFLAG) -o $@ $<
+
+fs/link.o: fs/link.c
+	$(CC) $(CFLAG) -o $@ $<
+
+fs/lseek.o: fs/lseek.c
+	$(CC) $(CFLAG) -o $@ $<
+
+mm/main.o: mm/main.c
+	$(CC) $(CFLAG) -o $@ $<
+
+mm/forkexit.o: mm/forkexit.c
+	$(CC) $(CFLAG) -o $@ $<
+
 lib/misc.o: lib/misc.c
 	$(CC) $(CFLAG) -o $@ $<	
 
@@ -137,26 +165,8 @@ lib/lseek.o: lib/lseek.c
 lib/fork.o: lib/fork.c
 	$(CC) $(CFLAG) -o $@ $<
 
-fs/main.o: fs/main.c
-	$(CC) $(CFLAG) -o $@ $<
-	
-fs/misc.o: fs/misc.c
+lib/wait.o: lib/wait.c
 	$(CC) $(CFLAG) -o $@ $<
 
-fs/read_write.o: fs/read_write.c
-	$(CC) $(CFLAG) -o $@ $<
-
-fs/disklog.o: fs/disklog.c
-	$(CC) $(CFLAG) -o $@ $<
-
-fs/open.o: fs/open.c
-	$(CC) $(CFLAG) -o $@ $<
-
-fs/link.o: fs/link.c
-	$(CC) $(CFLAG) -o $@ $<
-
-fs/lseek.o: fs/lseek.c
-	$(CC) $(CFLAG) -o $@ $<
-
-mm/main.o: mm/main.c
+lib/exit.o: lib/exit.c
 	$(CC) $(CFLAG) -o $@ $<

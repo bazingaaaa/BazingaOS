@@ -36,7 +36,6 @@ typedef struct s_proc
 	int ticks;/*ticks remain*/
 	int priority;
 
-	u32 pid;
 	char p_name[16];
 
 	int p_flags;/*process flags 只有当p_flags==0时，进程才可以运行，即阻塞与否*/
@@ -51,6 +50,8 @@ typedef struct s_proc
 	struct proc *next_sending;/*进程队列中的下一个进程*/
 
 	int p_parent; /*父进程的pid*/
+
+	int exit_status; /*进程退出状态*/
 
 	struct file_desc *filp[NR_FILES];
 }PROCESS;
