@@ -7,6 +7,7 @@ OffsetOfKernel		equ 	0;kernel.bin加载地址，偏移地址
 BaseOfLoaderPhyAddr	equ		BaseOfLoader * 10h;loader.bin加载的位置，物理地址
 BaseOfKernelPhyAddr	equ 	BaseOfKernel * 10h;kernel.bin加载的位置，物理地址
 
+ROOT_BASE			equ		0x6000
 
 KernelEntryPointPhyAdr	equ 	030400h
 

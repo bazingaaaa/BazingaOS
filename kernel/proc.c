@@ -406,37 +406,6 @@ PUBLIC int deadlock(int src, int dest)
 
 
 /*
-功能：进程间进行ipc的接口
-返回值：0成功
-*/
-PUBLIC int send_rec(int function, int src_dest, MESSAGE *m)
-{
-	int ret = 0;
-
-	if(RECEIVE == function)
-		memset((char*)m, 0, sizeof(MESSAGE));
-
-	switch(function)
-	{
-		case BOTH:
-			ret = sendrec(SEND, src_dest, m);
-			if(0 == ret)
-				ret = sendrec(RECEIVE, src_dest, m);
-			break;
-		case RECEIVE:
-		case SEND:
-			ret = sendrec(function, src_dest, m);
-			break;
-		default:
-			assert((function == BOTH) ||
-				(function == SEND) || (function == RECEIVE));
-			break;
-	}
-	return ret;
-}
-
-
-/*
 功能：通知一个任务产生了一个中断
 备注：运行在ring0
 */

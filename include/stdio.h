@@ -1,3 +1,6 @@
+#ifndef _BAZINGA_STDIO_H_
+#define _BAZINGA_STDIO_H_
+
 /* the assert macro */
 #define ASSERT
 #ifdef ASSERT
@@ -7,6 +10,8 @@ void assertion_failure(char *exp, char *file, char *base_file, int line);
 #else
 #define assert(exp)
 #endif
+
+#include "type.h"
 
 /* EXTERN */
 #define	EXTERN	extern	/* EXTERN is defined as extern except in global.c */
@@ -23,38 +28,48 @@ void assertion_failure(char *exp, char *file, char *base_file, int line);
 #define	MAX_PATH	128
 
 
+/*vsprintf.c*/
+int vsprintf(char* buf, const char* fmt, var_list args);
+int sprintf(char* buf, const char* fmt, ...);
+
+/*printf.c*/
+void printf(char *fmt, ...);
+void printl(char *fmt, ...);
+
+
 /*打开文件*/
-PUBLIC int open(const char* pathname, int flags);
+int open(const char* pathname, int flags);
 
 
 /*关闭文件*/
-PUBLIC int close(int fd);
+int close(int fd);
 
 
 /*读文件*/
-PUBLIC int read(int fd, char* buf, int size);
+int read(int fd, char* buf, int size);
 
 
 /*写文件*/
-PUBLIC int write(int fd, const char* buf, int size);
+int write(int fd, const char* buf, int size);
 
 
 /*删除文件*/
-PUBLIC int unlink(const char* pathname);
+int unlink(const char* pathname);
 
 
 /*操作文件指针*/
-PUBLIC off_t lseek(int fd, off_t offset, int whence);
+off_t lseek(int fd, off_t offset, int whence);
 
 
 /*创建进程*/
-PUBLIC int fork();
+int fork();
 
 
 /*等待子进程结束*/
-PUBLIC int wait(int *status);
+int wait(int *status);
 
 
 /*进程退出*/
-PUBLIC void exit(int status);
+void exit(int status);
 
+#endif

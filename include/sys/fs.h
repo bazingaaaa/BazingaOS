@@ -39,7 +39,7 @@ struct inode
 	/*设备上可见*/
 	u32 i_mode;
 	u32 i_size;/*文件实际占用的大小,单位：字节*/
-	u32 i_start_sect;/*相对于分区区扇区起始，编号从1开始*/
+	u32 i_start_sect;/*相对于分区扇区起始，编号从1开始*/
 	u32 i_nr_sects;/*文件占用的总大小，单位：扇区*/
 	u8 _unused[16];
 

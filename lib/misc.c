@@ -5,6 +5,9 @@
 #include "protect.h"
 #include "proc.h"
 #include "proto.h"
+#include "fs.h"
+#include "global.h"
+#include "string.h"
 
 
 /*
@@ -79,4 +82,50 @@ PUBLIC int strcmp(const char* s1, const char* s2)
 		}
 	}
 	return *p1 - *p2;
+}
+
+
+/*
+功能：计算字符串长度
+*/
+PUBLIC int strlen(char* str)
+{
+	int len = 0;
+	while(*str)
+	{
+		str++;
+		len++;
+	}
+	return len;
+}
+
+
+/*
+功能：进程间进行ipc的接口
+返回值：0成功
+*/
+PUBLIC int send_rec(int function, int src_dest, MESSAGE *m)
+{
+	int ret = 0;
+
+	if(RECEIVE == function)
+		memset((char*)m, 0, sizeof(MESSAGE));
+
+	switch(function)
+	{
+		case BOTH:
+			ret = sendrec(SEND, src_dest, m);
+			if(0 == ret)
+				ret = sendrec(RECEIVE, src_dest, m);
+			break;
+		case RECEIVE:
+		case SEND:
+			ret = sendrec(function, src_dest, m);
+			break;
+		default:
+			assert((function == BOTH) ||
+				(function == SEND) || (function == RECEIVE));
+			break;
+	}
+	return ret;
 }

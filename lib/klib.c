@@ -78,21 +78,6 @@ PUBLIC void delay(int time)
 
 
 /*
-功能：计算字符串长度
-*/
-PUBLIC int strlen(char* str)
-{
-	int len = 0;
-	while(*str)
-	{
-		str++;
-		len++;
-	}
-	return len;
-}
-
-
-/*
 功能：获取启动参数
 */
 PUBLIC void get_boot_param(struct boot_params* pbp)

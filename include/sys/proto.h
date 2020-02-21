@@ -65,15 +65,6 @@ PUBLIC void set_cur_con(int con_no);
 PUBLIC void init_screen(TTY *p_tty);
 PUBLIC void scroll_screen(CONSOLE *p_con, int direction);
 
-/*vsprintf.c*/
-PUBLIC int vsprintf(char* buf, const char* fmt, var_list args);
-PUBLIC int sprintf(char* buf, const char* fmt, ...);
-
-/*printf.c*/
-PUBLIC void printf(char *fmt, ...);
-PUBLIC void printl(char *fmt, ...);
-
-
 
 /*misc.h*/
 PUBLIC void assertion_failure(char *exp, char *file, char *base_file, int line);

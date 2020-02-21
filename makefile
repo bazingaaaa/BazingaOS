@@ -14,10 +14,11 @@ LDFLAG = -s -Ttext $(ENTRY_POINT) -m elf_i386
 BAZINGABOOT = boot/boot.bin boot/loader.bin
 BAZINGAKERNEL = kernel/kernel.bin
 LOBJS = lib/close.o lib/fork.o lib/kliba.o lib/klib.o lib/string.o lib/misc.o lib/open.o\
-		lib/read.o lib/write.o lib/unlink.o lib/lseek.o lib/wait.o lib/exit.o
+		lib/read.o lib/write.o lib/unlink.o lib/lseek.o lib/wait.o lib/exit.o lib/syscall.o\
+		lib/printf.o lib/vsprintf.o lib/getpid.o
 OBJS = kernel/kernel.o kernel/start.o  kernel/i8259a.o kernel/protect.o kernel/keyboard.o kernel/tty.o \
-		kernel/main.o kernel/global.o kernel/clock.o kernel/syscall.o kernel/proc.o \
-		kernel/console.o kernel/printf.o kernel/vsprintf.o  kernel/systask.o kernel/hd.o fs/main.o \
+		kernel/main.o kernel/global.o kernel/clock.o kernel/proc.o \
+		kernel/console.o kernel/systask.o kernel/hd.o fs/main.o \
 		fs/misc.o fs/read_write.o fs/link.o fs/open.o fs/lseek.o mm/main.o mm/forkexit.o $(LOBJS)
 	
 
@@ -50,9 +51,6 @@ boot/loader.bin:boot/loader.asm boot/include/pm.inc boot/include/load.inc
 $(BAZINGAKERNEL): $(OBJS)
 	$(LD) $(LDFLAG) -o $(BAZINGAKERNEL) $(OBJS)
 
-kernel/syscall.o: kernel/syscall.asm
-	$(ASM) $(ASMKFLAG) -o $@ $<
-
 kernel/kernel.o: kernel/kernel.asm
 	$(ASM) $(ASMKFLAG) -o $@ $<
 
@@ -82,12 +80,6 @@ kernel/tty.o: kernel/tty.c
 
 kernel/console.o: kernel/console.c
 	$(CC) $(CFLAG) -o $@ $<	
-
-kernel/printf.o: kernel/printf.c
-	$(CC) $(CFLAG) -o $@ $<	
-
-kernel/vsprintf.o: kernel/vsprintf.c
-	$(CC) $(CFLAG) -o $@ $<
 
 kernel/systask.o: kernel/systask.c 
 	$(CC) $(CFLAG) -o $@ $<	
@@ -169,4 +161,13 @@ lib/wait.o: lib/wait.c
 	$(CC) $(CFLAG) -o $@ $<
 
 lib/exit.o: lib/exit.c
+	$(CC) $(CFLAG) -o $@ $<
+
+lib/syscall.o: lib/syscall.asm
+	$(ASM) $(ASMKFLAG) -o $@ $<
+
+lib/printf.o: lib/printf.c
+	$(CC) $(CFLAG) -o $@ $<	
+
+lib/vsprintf.o: lib/vsprintf.c
 	$(CC) $(CFLAG) -o $@ $<

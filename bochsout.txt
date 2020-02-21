@@ -31,7 +31,7 @@
 00000000000i[      ]   SB16 support: no
 00000000000i[      ]   USB support: no
 00000000000i[      ]   VGA extension support: vbe
-00000000000i[MEM0  ] allocated memory at 0x7fd2a53af010. after alignment, vector=0x7fd2a53b0000
+00000000000i[MEM0  ] allocated memory at 0x7fd413566010. after alignment, vector=0x7fd413567000
 00000000000i[MEM0  ] 32.00MB
 00000000000i[MEM0  ] mem block size = 0x00100000, blocks=32
 00000000000i[MEM0  ] rom at 0xfffe0000/131072 ('./bochs_config/BIOS-bochs-latest')
@@ -41,7 +41,7 @@
 00000000000i[DEV   ] PIIX3 PCI-to-ISA bridge present at device 1, function 0
 00000000000i[PLUGIN] init_dev of 'cmos' plugin device by virtual method
 00000000000i[CMOS  ] Using local time for initial clock
-00000000000i[CMOS  ] Setting initial clock to: Wed Feb 19 22:18:25 2020 (time0=1582121905)
+00000000000i[CMOS  ] Setting initial clock to: Thu Feb 20 21:44:07 2020 (time0=1582206247)
 00000000000i[PLUGIN] init_dev of 'dma' plugin device by virtual method
 00000000000i[DMA   ] channel 4 used by cascade
 00000000000i[PLUGIN] init_dev of 'pic' plugin device by virtual method
@@ -185,26 +185,26 @@
 00001876883i[BIOS  ] ata0-0: PCHS=162/16/63 translation=none LCHS=162/16/63
 00005754089i[BIOS  ] IDE time out
 00017994821i[BIOS  ] Booting from 0000:7c00
-00403204000p[XGUI  ] >>PANIC<< POWER button turned off.
-00403204000i[CPU0  ] CPU is in protected mode (active)
-00403204000i[CPU0  ] CS.mode = 32 bit
-00403204000i[CPU0  ] SS.mode = 32 bit
-00403204000i[CPU0  ] EFER   = 0x00000000
-00403204000i[CPU0  ] | EAX=0009fe20  EBX=00000001  ECX=00000030  EDX=00000000
-00403204000i[CPU0  ] | ESP=0009fdc0  EBP=0009fdcc  ESI=00000000  EDI=0009fe21
-00403204000i[CPU0  ] | IOPL=1 id vip vif ac vm rf nt of df IF tf sf zf af PF cf
-00403204000i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
-00403204000i[CPU0  ] |  CS:0005( 0000| 1|  1) 00000000 ffffffff 1 1
-00403204000i[CPU0  ] |  DS:000d( 0001| 1|  1) 00000000 ffffffff 1 1
-00403204000i[CPU0  ] |  SS:000d( 0001| 1|  1) 00000000 ffffffff 1 1
-00403204000i[CPU0  ] |  ES:000d( 0001| 1|  1) 00000000 ffffffff 1 1
-00403204000i[CPU0  ] |  FS:000d( 0001| 1|  1) 00000000 ffffffff 1 1
-00403204000i[CPU0  ] |  GS:0019( 0003| 0|  1) 000b8000 0000ffff 0 0
-00403204000i[CPU0  ] | EIP=00038970 (00038970)
-00403204000i[CPU0  ] | CR0=0xe0000011 CR2=0x00000000
-00403204000i[CPU0  ] | CR3=0x00100000 CR4=0x00000000
-00403204000i[CPU0  ] 0x00038970>> dec ecx : 49
-00403204000i[CMOS  ] Last time is 1582122005 (Wed Feb 19 22:20:05 2020)
-00403204000i[XGUI  ] Exit
-00403204000i[      ] restoring default signal behavior
-00403204000i[SIM   ] quit_sim called with exit code 1
+362759204000i[      ] cpu loop quit, shutting down simulator
+362759204000i[CPU0  ] CPU is in protected mode (active)
+362759204000i[CPU0  ] CS.mode = 32 bit
+362759204000i[CPU0  ] SS.mode = 32 bit
+362759204000i[CPU0  ] EFER   = 0x00000000
+362759204000i[CPU0  ] | EAX=00000000  EBX=00000002  ECX=0000002f  EDX=0009fe20
+362759204000i[CPU0  ] | ESP=0003eb30  EBP=0003eb40  ESI=00041da0  EDI=00000000
+362759204000i[CPU0  ] | IOPL=1 id vip vif ac vm rf nt of df IF tf SF zf af pf CF
+362759204000i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
+362759204000i[CPU0  ] |  CS:0008( 0001| 0|  0) 00000000 ffffffff 1 1
+362759204000i[CPU0  ] |  DS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+362759204000i[CPU0  ] |  SS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+362759204000i[CPU0  ] |  ES:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+362759204000i[CPU0  ] |  FS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+362759204000i[CPU0  ] |  GS:0019( 0003| 0|  1) 000b8000 0000ffff 0 0
+362759204000i[CPU0  ] | EIP=00032802 (00032802)
+362759204000i[CPU0  ] | CR0=0xe0000011 CR2=0x00000000
+362759204000i[CPU0  ] | CR3=0x00100000 CR4=0x00000000
+362759204000i[CPU0  ] 0x00032802>> jbe .-63 (0x000327c5) : 76C1
+362759204000i[CMOS  ] Last time is 1582296936 (Fri Feb 21 22:55:36 2020)
+362759204000i[XGUI  ] Exit
+362759204000i[      ] restoring default signal behavior
+362759204000i[SIM   ] quit_sim called with exit code 1
