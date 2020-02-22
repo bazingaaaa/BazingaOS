@@ -19,11 +19,15 @@ PUBLIC int strip_path(char* filename, struct inode **ppinode, const char* pathna
 	const char *src = pathname;
 	char *dst = filename;
 
-	if('/' != src[0])/*无效路径*/
+	if(0 == src)/*无效路径*/
 	{
 		return -1;
 	}
-	src++;
+	if(*src == '/')
+	{
+		src++;
+	}
+
 	/*拷贝文件名*/
 	while(*src)
 	{
@@ -57,38 +61,39 @@ PUBLIC int search_file(const char* path)
 	char filename[MAX_FILENAME_LEN];
 	int i, j;
 
-	if(strip_path(filename, &dir_inode, path))/*提取待查文件的目录节点和文件名*/
+	memset(filename, 0, MAX_FILENAME_LEN);
+	if(0 != strip_path(filename, &dir_inode, path))/*提取待查文件的目录节点和文件名*/
 	{
-		return inode_nr;
+		return 0;
 	}
+
+	if(filename[0] == 0)
+		return dir_inode->i_num;
 
 	/*根目录文件的设备只能是ROOT_DEV*/
 	assert(dir_inode->i_dev == ROOT_DEV);
 
-	int sect_nr = dir_inode->i_start_sect;
-	int nr_sect = dir_inode->i_nr_sects;
-	int nr_en = dir_inode->i_size / DIR_ENT_SIZE;
-	/*在根目录文件中找文件*/
-	for(i = 0;i < nr_sect;i++)
-	{
-		RD_SECT(dir_inode->i_dev, sect_nr + i);
-		struct dir_entry *en = (struct dir_entry*)fsbuf;
-		for(j = 0;j < SECTOR_SIZE / DIR_ENT_SIZE && nr_en > 0;j++, en++, nr_en--)
-		{
-			if(0 == en->inode_nr)/*无效节点*/
-			{
-				continue;
-			}
-			if(!strcmp(filename, en->name))/*文件名相同*/
-			{
-				inode_nr = en->inode_nr;
+	int dir_blk0_nr = dir_inode->i_start_sect;
+	int nr_dir_blks = (dir_inode->i_size + SECTOR_SIZE - 1) / SECTOR_SIZE;
+	int nr_dir_entries =
+	  dir_inode->i_size / DIR_ENT_SIZE; /**
+					       * including unused slots
+					       * (the file has been deleted
+					       * but the slot is still there)
+					       */
+	int m = 0;
+	struct dir_entry * pde;
+	for (i = 0; i < nr_dir_blks; i++) {
+		RD_SECT(dir_inode->i_dev, dir_blk0_nr + i);
+		pde = (struct dir_entry *)fsbuf;
+		for (j = 0; j < SECTOR_SIZE / DIR_ENT_SIZE; j++,pde++) {
+			if (memcmp(filename, pde->name, MAX_FILENAME_LEN) == 0)
+				return pde->inode_nr;
+			if (++m > nr_dir_entries)
 				break;
-			}	
 		}
-		if(inode_nr)
-		{
+		if (m > nr_dir_entries) /* all entries have been iterated */
 			break;
-		}
 	}
 
 	return inode_nr;

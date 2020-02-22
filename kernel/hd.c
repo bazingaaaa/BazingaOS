@@ -408,11 +408,11 @@ PRIVATE void hd_rdwt(MESSAGE *msg)
 	int drive = DRV_OF_DEV(device);
 
 	/*访问的地址不能超过1024G*/
-	assert((pos>>SECTOR_SIZE_SHIFT) < 1<<31);
+	assert((pos>>SECTOR_SIZE_SHIFT) < (1<<31));
 
 	/*读取的起始位置必须是整扇区字节处（暂定）*/
 	assert((pos & 0x1ff) == 0);
-	u32 sec_nr = pos>>SECTOR_SIZE_SHIFT;
+	u32 sec_nr = (u32)(pos>>SECTOR_SIZE_SHIFT);
 	sec_nr += device <= MAX_PRIM ? 
 				hd_info[0].primary[device].base:/*主分区*/
 				hd_info[0].logical[(device - MINOR_hd1a) % NR_SUB_PER_DRIVE].base;/*逻辑分区*/
@@ -450,7 +450,7 @@ PRIVATE void hd_rdwt(MESSAGE *msg)
 			interrupt_wait();
 		}
 		bytes_left -= bytes_proc;
-		la += SECTOR_SIZE;
+		la += bytes_proc;
 	}
 }
 

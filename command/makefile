@@ -28,8 +28,8 @@ realclean:
 
 install: all clean
 	cp ../kernel/kernel.bin ./ -v
-	tar vcf inst.tar kernel.bin $(BIN)
-	dd if=inst.tar of=$(HD) seek=29360128 bs=1 count=18472 conv=notrunc
+	tar vcf inst.tar kernel.bin $(BIN) 
+	dd if=inst.tar of=$(HD) seek=29360128 bs=1 count=81920 conv=notrunc
 
 start.o: start.asm
 	$(ASM) $(ASMFLAG) -o $@ $<

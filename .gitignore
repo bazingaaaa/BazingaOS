@@ -1,8 +1,11 @@
 *.o
 *.a
-pwd
-echo
 *.txt
 *.img
 *.bin
 *.tar
+command/pwd
+command/echo
+
+
+

@@ -10,6 +10,8 @@
 #include "stdio.h"
 
 
+PRIVATE void untar(const char *path);
+
 int k_reenter;
 u8 task_stack[STACK_SIZE_TOTAL];
 
@@ -24,8 +26,6 @@ void testA()
 	//assert(1 == fd_stdout);
 	char rdbuf[128];
 
-	//get_kernel_map(&base, &limit);
-	//printf("base:0x%x limit:0x%x\n", base, limit);
 	while(1)
 	{
 		write(fd_stdout, "$ ", 2);
@@ -55,7 +55,7 @@ void testB()
 		//disp_color_str("B", BRIGHT | MAKE_COLOR(BLACK, RED));
 		//(get_ticks());
 		//printf("B");
-		milli_delay(200);
+		//milli_delay(200);
 	}
 }
 
@@ -69,7 +69,7 @@ void testC()
 		//disp_color_str("C", BRIGHT | MAKE_COLOR(BLACK, RED));
 		//disp_int(get_ticks());
 		//printf("C");
-		milli_delay(200);
+		//milli_delay(200);
 	}
 }
 
@@ -81,7 +81,7 @@ void testC()
 PUBLIC void kernel_main()
 {
 	disp_str("------\"kernel_main\" begins------\n");
-	int i, j;
+	int i, j, prio;
 	PROCESS *p_proc = proc_table;
 	TASK *p_task = task_table;
 	//u16 seletor_ldt = SELECTOR_LDT_FIRST;
@@ -107,6 +107,7 @@ PUBLIC void kernel_main()
 			eflags = 0x1202;
 			rpl = SA_RPL1;
 			privilege = PRIVILEGE_TASK;
+			prio = 15;
 		}
 		else/*用户进程*/
 		{
@@ -114,6 +115,7 @@ PUBLIC void kernel_main()
 			eflags = 0x202;
 			rpl = SA_RPL3;
 			privilege = PRIVILEGE_USER;
+			prio = 5;
 		}
 		
 		//if(strcmp(p_proc->p_name, "INIT") == 0)/*INIT进程的内存分布*/
@@ -147,8 +149,10 @@ PUBLIC void kernel_main()
 		p_proc->regs.esp = (u32)p_stack;/*指向栈顶*/
 		//p_proc->regs.esp = (u32)task_stack[i];/*指向栈顶*/
 		p_proc->regs.eflags = eflags;
-		p_proc->p_parent = NO_TASK;
 
+		p_proc->ticks = p_proc->priority = prio;
+
+		p_proc->p_parent = NO_TASK;
 		p_proc->p_flags = 0;/*一定要进行初始化，不然会被阻塞*/
 		p_proc->p_recvfrom = NO_TASK;
 		p_proc->p_sendto = NO_TASK;
@@ -158,41 +162,18 @@ PUBLIC void kernel_main()
 		p_proc->p_msg = 0;
 
 		p_stack = p_stack - p_task->stacksize;
-		//seletor_ldt += 8;
-		p_proc++;
 
 		/*初始化文件描述符*/
-		memset(p_proc->filp, 0, sizeof(struct file_desc*) * NR_FILES);
+		for (j = 0;j < NR_FILES;j++)
+			p_proc->filp[j] = 0;
+
+		//seletor_ldt += 8;
+		p_proc++;	
 	}
 
 	/*设置时钟中断相关*/
 	ticks = 0;
 
-	/*为每个任务设置priority,新增任务或进程时这里必须设置优先级和tick数*/
-	proc_table[0].priority = 15;
-	proc_table[0].ticks = 15;
-
-	proc_table[1].priority = 15;
-	proc_table[1].ticks = 15;
-
-	proc_table[2].priority = 15;
-	proc_table[2].ticks = 15;
-
-	proc_table[3].priority = 15;
-	proc_table[3].ticks = 15;
-
-	proc_table[4].priority = 15;
-	proc_table[4].ticks = 15;
-	
-	proc_table[5].priority = 5;
-	proc_table[5].ticks = 5;
-
-	proc_table[6].priority = 5;
-	proc_table[6].ticks = 5;
-
-	proc_table[7].priority = 5;
-	proc_table[7].ticks = 5;
-	
 	/*清屏*/
 	disp_pos = 0;
 	for(i = 0;i < 80 * 25;i++)
@@ -254,6 +235,10 @@ PUBLIC void Init()
 	int fd_stdout = open(tty_name, O_RDWR);
 	int pid;
 
+	printf("Init() is running ...\n");
+
+	untar("/cmd.tar");
+
 	pid = fork();
 	if(pid != 0)
 	{
@@ -275,3 +260,80 @@ PUBLIC void Init()
 	{
 	}
 }
+
+
+/**
+ * @struct posix_tar_header
+ * Borrowed from GNU `tar'
+ */
+struct posix_tar_header
+{				/* byte offset */
+	char name[100];		/*   0 */
+	char mode[8];		/* 100 */
+	char uid[8];		/* 108 */
+	char gid[8];		/* 116 */
+	char size[12];		/* 124 */
+	char mtime[12];		/* 136 */
+	char chksum[8];		/* 148 */
+	char typeflag;		/* 156 */
+	char linkname[100];	/* 157 */
+	char magic[6];		/* 257 */
+	char version[2];	/* 263 */
+	char uname[32];		/* 265 */
+	char gname[32];		/* 297 */
+	char devmajor[8];	/* 329 */
+	char devminor[8];	/* 337 */
+	char prefix[155];	/* 345 */
+	/* 500 */
+};
+
+/*
+功能：解压cmd.tar文件
+*/
+PRIVATE void untar(const char *path)
+{
+	char buf[SECTOR_SIZE * 16];
+	int chunk = SECTOR_SIZE * 16;
+	printf("[extrat file:%s\n", path);
+	int fd_tar = open(path, O_RDWR);
+	assert(fd_tar >= 0);
+
+	while(1)
+	{
+		read(fd_tar, buf, SECTOR_SIZE);
+		if(buf[0] == 0)
+		{
+			break;
+		}
+		struct posix_tar_header *pth = (struct posix_tar_header*)buf;
+		int fd = open(pth->name, O_CREAT | O_RDWR);
+		if(fd < 0)
+		{
+			printf("   fail to extract file:%s\n", pth->name);
+			printf(" aborted]\n");
+			return;
+		}
+		/*解析文件大小*/
+		int len = 0;
+		char *q = pth->size;
+		while(*q)
+		{
+			len = (len * 8 + *q - '0');
+			q++;
+		}
+		int byte_left = len;
+		printf("   extract file:%s (%d byte)\n", pth->name, len);
+		while(byte_left > 0)
+		{
+			int byte_read = MIN(byte_left, chunk);
+			read(fd_tar, buf, ((byte_read - 1) / SECTOR_SIZE + 1) * SECTOR_SIZE);
+			write(fd, buf, byte_read);
+			byte_left -= byte_read;
+		}
+		close(fd);
+	}
+	close(fd_tar);
+	printf(" done]\n");
+}
+
+

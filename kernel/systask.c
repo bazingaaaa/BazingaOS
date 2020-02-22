@@ -19,7 +19,6 @@ PUBLIC void task_sys()
 		send_rec(RECEIVE, ANY, &m);
 		int src = m.source;
 
-		//disp_int(src);
 		switch(m.type)
 		{
 			case GET_TICKS:

@@ -227,6 +227,16 @@ PUBLIC int msg_receive(PROCESS *current, int src, MESSAGE *m)
 
 		return 0;
 	}
+	else if(src == INTERRUPT)
+	{
+		p_who_wanna_rcv->p_flags |= RECEIVING;
+		//p_who_wanna_rcv->p_flags = RECEIVING;
+		p_who_wanna_rcv->p_recvfrom = INTERRUPT;
+
+		block(p_who_wanna_rcv);
+
+		return 0;
+	}
 
 	/*处理非中断类消息,检查源进程*/
 	if(src == ANY)
@@ -248,7 +258,7 @@ PUBLIC int msg_receive(PROCESS *current, int src, MESSAGE *m)
 			assert(p_from->p_msg != 0);
 		}
 	}
-	else/*接收指定进程消息*/
+	else 
 	{
 		p_from = &proc_table[src];
 
@@ -316,9 +326,7 @@ PUBLIC int msg_receive(PROCESS *current, int src, MESSAGE *m)
 	}
 	else	
 	{
-		p_who_wanna_rcv->p_flags |= RECEIVING;
-		p_who_wanna_rcv->p_msg = m;
-
+		
 		if(src == ANY)
 		{
 			p_who_wanna_rcv->p_recvfrom = ANY;
@@ -328,6 +336,9 @@ PUBLIC int msg_receive(PROCESS *current, int src, MESSAGE *m)
 			p_who_wanna_rcv->p_recvfrom = proc2pid(p_from);
 		}
 
+		p_who_wanna_rcv->p_flags |= RECEIVING;
+		p_who_wanna_rcv->p_msg = m;
+
 		block(p_who_wanna_rcv);
 
 		assert(p_who_wanna_rcv->p_flags == RECEIVING);
@@ -335,6 +346,7 @@ PUBLIC int msg_receive(PROCESS *current, int src, MESSAGE *m)
 		assert(p_who_wanna_rcv->p_recvfrom != NO_TASK);
 		assert(p_who_wanna_rcv->p_sendto == NO_TASK);
 		assert(p_who_wanna_rcv->has_int_msg == 0);
+
 	}
 
 	return 0;
