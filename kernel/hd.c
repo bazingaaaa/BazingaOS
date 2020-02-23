@@ -248,7 +248,7 @@ PRIVATE void hd_open(int device)
 	if(hd_info[0].open_cnt++ == 0)
 	{
 		partition(drive * (NR_PART_PER_DRIVE + 1), P_PRIMARY);
-		print_hdinfo(hd_info);
+		//print_hdinfo(hd_info);
 	}
 }
 

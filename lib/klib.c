@@ -111,15 +111,31 @@ PUBLIC int get_kernel_map(unsigned int * b, unsigned int * l)
 	*b = ~0;
 	unsigned int t = 0;
 	int i;
+	// for (i = 0; i < elf_header->e_shnum; i++) {
+	// 	Elf32_Shdr* section_header =
+	// 		(Elf32_Shdr*)(bp.kernel_file +
+	// 			      elf_header->e_shoff +
+	// 			      i * elf_header->e_shentsize);
+	// 	if (section_header->sh_flags & SHF_ALLOC) {
+	// 		int bottom = section_header->sh_addr;
+	// 		int top = section_header->sh_addr +
+	// 			section_header->sh_size;
+
+	// 		if (*b > bottom)
+	// 			*b = bottom;
+	// 		if (t < top)
+	// 			t = top;
+	// 	}
+	// }
 	for (i = 0; i < elf_header->e_shnum; i++) {
-		Elf32_Shdr* section_header =
-			(Elf32_Shdr*)(bp.kernel_file +
-				      elf_header->e_shoff +
-				      i * elf_header->e_shentsize);
-		if (section_header->sh_flags & SHF_ALLOC) {
-			int bottom = section_header->sh_addr;
-			int top = section_header->sh_addr +
-				section_header->sh_size;
+		Elf32_Phdr* program_header =
+			(Elf32_Phdr*)(bp.kernel_file +
+				      elf_header->e_phoff +
+				      i * elf_header->e_phentsize);
+		if (program_header->p_type == PT_LOAD) {
+			int bottom = program_header->p_vaddr;
+			int top = program_header->p_vaddr +
+				program_header->p_memsz;
 
 			if (*b > bottom)
 				*b = bottom;

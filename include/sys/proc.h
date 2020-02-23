@@ -70,7 +70,7 @@ typedef struct s_task
 #define NR_IRQS 16
 #define NR_SYS_CALLS 128
 
-#define STACK_SIZE 0x8000/*栈空间不能太小，栈溢出可能导致各种异常*/
+#define STACK_SIZE 0xA000/*栈空间不能太小，栈溢出可能导致各种异常*/
 #define STACK_SIZE_INIT STACK_SIZE
 #define STACK_SIZE_TESTA STACK_SIZE
 #define STACK_SIZE_TESTB STACK_SIZE
@@ -82,8 +82,6 @@ typedef struct s_task
 #define STACK_SIZE_TASKMM STACK_SIZE
 #define STACK_SIZE_TOTAL (STACK_SIZE_INIT\
 						+STACK_SIZE_TESTA\
-						+STACK_SIZE_TESTB\
-						+STACK_SIZE_TESTC\
 						+STACK_SIZE_TASKTTY\
 						+STACK_SIZE_TASKSYS\
 						+STACK_SIZE_TASKTHD\
@@ -92,5 +90,6 @@ typedef struct s_task
 
 #define PROC_ALLOC_BASE 		0xA00000/*进程内存分配起始10Mb*/
 #define PROC_DEFAULT_IMG_SIZE	0x100000/*进程默认映像大小1Mb*/
+#define	PROC_ORIGIN_STACK	0x400/*  1 KB */
 
 #endif

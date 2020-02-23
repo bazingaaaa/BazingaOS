@@ -23,9 +23,7 @@ PUBLIC TASK task_table[NR_TASKS] = {
 
 PUBLIC TASK user_procs[NR_PROCS]={
 	{Init,  STACK_SIZE_INIT,  "INIT"},
-	{testA, STACK_SIZE_TESTA, "testA"},
-	{testB, STACK_SIZE_TESTB, "testB"},
-	{testC, STACK_SIZE_TESTC, "testC"}
+	{testA, STACK_SIZE_TESTA, "testA"}
 };
 
 PUBLIC TSS tss;
@@ -56,3 +54,7 @@ struct dev_drv_map dd_map[] = {
 /*FS缓冲区,位于6M~7M之间*/
 PUBLIC u8 *fsbuf = (u8*)0x600000;
 PUBLIC const int FSBUF_SIZE = 0x100000;
+
+/*MM缓冲区，位于7M~8M之间*/
+PUBLIC	u8 *mmbuf = (u8*)0x700000;
+PUBLIC	const int MMBUF_SIZE = 0x100000;

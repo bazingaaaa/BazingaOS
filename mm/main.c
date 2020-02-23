@@ -46,6 +46,9 @@ PUBLIC void task_mm()
 				reply = 0;
 				do_wait(&msg);
 				break;
+			case EXEC:
+				msg.RETVAL = do_exec(&msg);
+				break;
 			default:
 				panic("mm unknown msg type");
 				break;
@@ -67,7 +70,7 @@ PRIVATE void init_mm()
 	struct boot_params bp;
 	get_boot_param(&bp);
 	memory_size = bp.mem_size;
-	printl("memory_size:0x%x\n", bp.kernel_file[0]);
+	printl("{MM} memsize:%dMB\n", memory_size / (1024 * 1024));
 }
 
 

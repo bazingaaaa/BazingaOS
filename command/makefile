@@ -28,7 +28,7 @@ realclean:
 
 install: all clean
 	cp ../kernel/kernel.bin ./ -v
-	tar vcf inst.tar kernel.bin $(BIN) 
+	tar vcf inst.tar  kernel.bin $(BIN) 
 	dd if=inst.tar of=$(HD) seek=29360128 bs=1 count=81920 conv=notrunc
 
 start.o: start.asm
@@ -37,11 +37,11 @@ start.o: start.asm
 echo.o: echo.c
 	$(CC) $(CFLAG) -o $@ $<
 
-echo: start.o echo.o $(LIB)
+echo: start.o echo.o  $(LIB)
 	$(LD) $(LDFLAG) -o $@ $?
 
 pwd.o: pwd.c
 	$(CC) $(CFLAG) -o $@ $<
 
-pwd: start.o pwd.o $(LIB)
+pwd: start.o pwd.o   $(LIB)
 	$(LD) $(LDFLAG) -o $@ $?

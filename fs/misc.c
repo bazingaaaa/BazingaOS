@@ -8,7 +8,8 @@
 #include "proto.h"
 #include "fs.h"
 #include "global.h"
-
+#include "stdio.h"
+#include "string.h"
 
 /*
 功能：抽取路径名中的文件名，并返回对应的文件夹的inode指针
@@ -97,4 +98,44 @@ PUBLIC int search_file(const char* path)
 	}
 
 	return inode_nr;
+}
+
+
+/*
+功能:查询文件信息
+*/
+PUBLIC int do_stat(MESSAGE *msg)
+{
+	char path[MAX_PATH];
+	char filename[MAX_PATH];
+	int src = msg->source;
+	assert(msg->NAME_LEN < MAX_PATH);
+	phys_copy(va2la(TASK_FS, path), va2la(src, msg->PATHNAME), msg->NAME_LEN);
+	path[msg->NAME_LEN] = 0;
+
+	struct inode* pNode = 0;
+	struct inode* dir_node = 0;
+	int inode_nr = 0;
+
+	if(0 == (inode_nr = search_file(path)))/*未找到该文件*/
+	{
+		return -1;
+	}
+	if(0 != strip_path(filename, &dir_node, path))/*执行到这个地方，该函数一定能成功*/
+	{
+		assert(0);
+	}
+	pNode = get_inode(dir_node->i_dev, inode_nr);
+
+	struct stat s;
+	s.st_dev = pNode->i_dev;
+	s.st_ino = pNode->i_num;
+	s.st_mode = pNode->i_mode;
+	s.st_rdev = is_special(pNode->i_mode) ? pNode->i_start_sect : NO_DEV;/*针对特殊设备*/
+	s.st_size = pNode->i_size;
+
+	put_inode(pNode);
+
+	phys_copy(va2la(src, msg->BUF), va2la(TASK_FS, &s), sizeof(struct stat));
+	return 0;
 }

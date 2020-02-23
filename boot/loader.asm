@@ -453,8 +453,8 @@ load_seg:
 	cmp eax, 0
 	jz no_action
 	;有效ph
-	push dword [esi + 10h]
-	mov eax, [esi + 4h]
+	push dword [esi + 010h]
+	mov eax, [esi + 04h]
 	add eax, BaseOfKernelPhyAddr
 	push eax
 	push dword [esi + 08h]
@@ -462,7 +462,7 @@ load_seg:
 	add esp, 12 
 
 no_action:
-	add esi, 20h
+	add esi, 020h
 	dec ecx
 	jnz load_seg
 

@@ -1,5 +1,13 @@
 #define EI_NIDENT		16
 
+/*
+PT_NULL    = 0: 该段没有被使用;
+PT_LOAD    = 1: 该段是一个可装载的内存段;
+PT_DYNAMIC = 2: 该段描述的是动态链接信息;
+*/
+
+#define PT_LOAD 1
+
 typedef unsigned int Elf32_Addr;
 typedef unsigned short Elf32_Half;
 typedef unsigned int Elf32_Off;
@@ -36,3 +44,15 @@ typedef struct elf32_shdr {
   Elf32_Word sh_addralign;  //节对齐
   Elf32_Word sh_entsize;  //节拥有固定大小项的大小
 } Elf32_Shdr;
+
+
+typedef struct elf32_Phdr{
+	Elf32_Word p_type;
+	Elf32_Off p_offset;
+	Elf32_Addr p_vaddr;
+	Elf32_Addr p_paddr;
+	Elf32_Word p_filesz;
+	Elf32_Word p_memsz;
+	Elf32_Word p_flags;
+	Elf32_Word p_align;
+}Elf32_Phdr;

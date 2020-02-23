@@ -16,7 +16,7 @@ int k_reenter;
 u8 task_stack[STACK_SIZE_TOTAL];
 
 void testA()
-{
+{	
 	int base, limit;
 	char tty_name[] = "/dev_tty1";
 	int fd_stdin = open(tty_name, O_RDWR);
@@ -91,11 +91,9 @@ PUBLIC void kernel_main()
 	u32 privilege;
 
 	for(i = 0;i < NR_TASKS + NR_PROCS;i++)
-	{
-		strcpy(p_proc->p_name, p_task->name);
+	{		
 		/*初始化进程表中的局部描述符信息,ldt中的第0和第1个段描述符*/
 		//p_proc->ldt_sel = seletor_ldt;/*该进程的ldt在gdt中的位置，切换时加载用*/
-
 		if(i >= NR_TASKS + NR_NATIVE_PROCS)/*空闲进程表项*/
 		{
 			p_proc->p_flags = FREE_SLOT;
@@ -117,6 +115,7 @@ PUBLIC void kernel_main()
 			privilege = PRIVILEGE_USER;
 			prio = 5;
 		}
+		strcpy(p_proc->p_name, p_task->name);
 		
 		//if(strcmp(p_proc->p_name, "INIT") == 0)/*INIT进程的内存分布*/
 		if(i == NR_TASKS)/*INIT进程的内存分布*/
@@ -127,8 +126,8 @@ PUBLIC void kernel_main()
 			{
 				return;
 			}
-			init_descriptor(&p_proc->ldts[INDEX_LDT_C], 0, (base + limit)>>LIMIT_4K_SHIFT, DA_32 | DA_C | privilege<<5 | DA_LIMIT_4K);
-			init_descriptor(&p_proc->ldts[INDEX_LDT_RW], 0, (base + limit)>>LIMIT_4K_SHIFT, DA_32 | DA_DRW | privilege<<5 | DA_LIMIT_4K);
+			init_descriptor(&p_proc->ldts[INDEX_LDT_C], 0, (base + limit)>>LIMIT_4K_SHIFT, DA_32 | DA_C | (privilege<<5) | DA_LIMIT_4K);
+			init_descriptor(&p_proc->ldts[INDEX_LDT_RW], 0, (base + limit)>>LIMIT_4K_SHIFT, DA_32 | DA_DRW | (privilege<<5) | DA_LIMIT_4K);
 		}
 		else/*普通进程的内存分布*/
 		{
@@ -233,11 +232,15 @@ PUBLIC void Init()
 	char tty_name[] = "/dev_tty1";
 	int fd_stdin = open(tty_name, O_RDWR);
 	int fd_stdout = open(tty_name, O_RDWR);
-	int pid;
+	int pid = 1;
 
 	printf("Init() is running ...\n");
-
+	
+	//int base, limit;
+	//int ret = get_kernel_map(&base, &limit);
+	//printf("base:0x%x   limit:0x%x\n", base, limit);
 	untar("/cmd.tar");
+
 
 	pid = fork();
 	if(pid != 0)
@@ -252,10 +255,15 @@ PUBLIC void Init()
 	}
 	else
 	{
+		int ret = execl("/pwd", "pwd", 0);
+		printf("execl:%d\n", ret);
+
+		//execl("echo", 0);
 		printf("this is child proc\n");
+
 		exit(123);
 	}
-
+	
 	while(1)
 	{
 	}
@@ -298,6 +306,7 @@ PRIVATE void untar(const char *path)
 	int fd_tar = open(path, O_RDWR);
 	assert(fd_tar >= 0);
 
+
 	while(1)
 	{
 		read(fd_tar, buf, SECTOR_SIZE);
@@ -337,3 +346,16 @@ PRIVATE void untar(const char *path)
 }
 
 
+/*
+功能：输出文件信息
+*/
+void dump_file_stat(char *path)
+{
+	struct stat s;
+	if(0 != stat(path, &s))
+	{
+		return;
+	}
+	printf("dev:0x%x\ninode_nr:%d\ni_mode:0x%x\nsdev:0x%x\nsize:%d\n", s.st_dev, s.st_ino, s.st_mode,
+			s.st_rdev, s.st_size);
+}

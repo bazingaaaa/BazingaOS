@@ -27,6 +27,14 @@ void assertion_failure(char *exp, char *file, char *base_file, int line);
 
 #define	MAX_PATH	128
 
+struct stat {
+	int st_dev;/* major/minor device number */
+	int st_ino;	/* i-node number */
+	int st_mode;/* file mode, protection bits, etc. */
+	int st_rdev;/* device ID (if special file) */
+	int st_size;/* file size */
+};
+
 
 /*vsprintf.c*/
 int vsprintf(char* buf, const char* fmt, var_list args);
@@ -71,5 +79,12 @@ int wait(int *status);
 
 /*进程退出*/
 void exit(int status);
+
+/*查询文件信息*/
+int stat(char* path, struct stat *s);
+
+/*执行文件*/
+int execl(const char* path, const char *arg, ...);
+int execv(const char* path, char *argv[]);
 
 #endif

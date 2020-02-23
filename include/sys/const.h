@@ -65,7 +65,7 @@ void assertion_failure(char *exp, char *file, char *base_file, int line);
 /*任务数/总进程数/本地进程数*/
 #define NR_TASKS 5
 #define NR_PROCS 32
-#define NR_NATIVE_PROCS 4
+#define NR_NATIVE_PROCS 2
 
 #define FIRST_PROC	proc_table[0]
 #define LAST_PROC	proc_table[NR_TASKS + NR_PROCS - 1]
@@ -139,7 +139,7 @@ enum msgtype {
 #define	PATHNAME	u.m3.m3p1
 #define	FLAGS		u.m3.m3i1
 #define	NAME_LEN	u.m3.m3i2
-
+#define	BUF_LEN		u.m3.m3i3
 #define	CNT		u.m3.m3i2
 #define	REQUEST		u.m3.m3i2
 #define	PROC_NR		u.m3.m3i3

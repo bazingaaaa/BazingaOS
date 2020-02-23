@@ -66,6 +66,9 @@ PUBLIC void task_fs()
 			case EXIT:
 				fs_exit(&msg);
 				break;
+			case STAT:
+				msg.RETVAL = do_stat(&msg);
+				break;
 			default:
 				panic("fs unknown msg type");
 				break;

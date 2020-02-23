@@ -15,11 +15,11 @@ BAZINGABOOT = boot/boot.bin boot/loader.bin
 BAZINGAKERNEL = kernel/kernel.bin
 LOBJS = lib/close.o lib/fork.o lib/kliba.o lib/klib.o lib/string.o lib/misc.o lib/open.o\
 		lib/read.o lib/write.o lib/unlink.o lib/lseek.o lib/wait.o lib/exit.o lib/syscall.o\
-		lib/printf.o lib/vsprintf.o lib/getpid.o
+		lib/printf.o lib/vsprintf.o lib/getpid.o lib/stat.o lib/exec.o 
 OBJS = kernel/kernel.o kernel/start.o  kernel/i8259a.o kernel/protect.o kernel/keyboard.o kernel/tty.o \
 		kernel/main.o kernel/global.o kernel/clock.o kernel/proc.o \
 		kernel/console.o kernel/systask.o kernel/hd.o fs/main.o \
-		fs/misc.o fs/read_write.o fs/link.o fs/open.o fs/lseek.o mm/main.o mm/forkexit.o $(LOBJS)
+		fs/misc.o fs/read_write.o fs/link.o fs/open.o fs/lseek.o mm/main.o mm/forkexit.o mm/exec.o $(LOBJS)
 	
 
 .PHONY = everything clean realclean all buildimg
@@ -118,6 +118,9 @@ mm/main.o: mm/main.c
 mm/forkexit.o: mm/forkexit.c
 	$(CC) $(CFLAG) -o $@ $<
 
+mm/exec.o: mm/exec.c
+	$(CC) $(CFLAG) -o $@ $<
+
 lib/misc.o: lib/misc.c
 	$(CC) $(CFLAG) -o $@ $<	
 
@@ -170,4 +173,10 @@ lib/printf.o: lib/printf.c
 	$(CC) $(CFLAG) -o $@ $<	
 
 lib/vsprintf.o: lib/vsprintf.c
+	$(CC) $(CFLAG) -o $@ $<
+
+lib/stat.o: lib/stat.c
+	$(CC) $(CFLAG) -o $@ $<
+
+lib/exec.o: lib/exec.c
 	$(CC) $(CFLAG) -o $@ $<
