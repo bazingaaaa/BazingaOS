@@ -276,7 +276,7 @@ PUBLIC void shabby_shell(const char* tty_name)
 
 		/*判断是否是有效命令*/
 		//printf("open file:%s\n", argv[0]);
-		int fd = s(argv[0], O_RDWR);
+		int fd = open(argv[0], O_RDWR);
 		//printf("fd:%d\n", fd);
 		if(fd < 0)/*无效命令*/
 		{
