@@ -39,21 +39,26 @@ PUBLIC void spin(char *func_name)
 功能：内存比较
 返回值：0-内存完全相同
 */
-PUBLIC int memcmp(const void * s1, const void *s2, int n)
+PUBLIC int memcmp(const void *s1, const void *s2, int n)
 {
-	if ((s1 == 0) || (s2 == 0)) { /* for robustness */
-		return (s1 - s2);
+	int i;
+	const char *p1 = (const char *)s1;
+	const char *p2 = (const char *)s2;
+
+	if(s1 == 0 || s2 == 0)/*s1或s2为无效指针*/
+	{
+		return s1 - s2;
 	}
 
-	const char * p1 = (const char *)s1;
-	const char * p2 = (const char *)s2;
-	int i;
-	for (i = 0; i < n; i++,p1++,p2++) {
-		if (*p1 != *p2) {
-			return (*p1 - *p2);
+	for(i = 0;i < n;i++, p1++, p2++)
+	{
+		if(*p1 != *p2)
+		{
+			return *p1 - *p2;
 		}
 	}
 	return 0;
+
 }
 
 

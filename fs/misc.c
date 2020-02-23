@@ -88,17 +88,14 @@ PUBLIC int search_file(const char* path)
 		RD_SECT(dir_inode->i_dev, dir_blk0_nr + i);
 		pde = (struct dir_entry *)fsbuf;
 		for (j = 0; j < SECTOR_SIZE / DIR_ENT_SIZE; j++,pde++) {
-			if (strcmp(filename, pde->name) == 0)
-			{	
+			if (memcmp(filename, pde->name, MAX_FILENAME_LEN) == 0)
 				return pde->inode_nr;
-			}
 			if (++m > nr_dir_entries)
 				break;
 		}
 		if (m > nr_dir_entries) /* all entries have been iterated */
 			break;
 	}
-
 
 	return inode_nr;
 }
