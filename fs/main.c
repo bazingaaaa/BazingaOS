@@ -111,7 +111,12 @@ PRIVATE void init_fs()
 	send_rec(BOTH, TASK_HD, &driver_msg);
 
 	/*建立文件系统*/
-	mkfs();
+	RD_SECT(ROOT_DEV, 1);
+
+	if(((struct super_block *)fsbuf)->magic != MAGIC_V1)
+	{
+		mkfs();
+	}
 
 	/*读取超级块信息*/
 	read_super_block(ROOT_DEV);

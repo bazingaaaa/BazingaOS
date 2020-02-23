@@ -344,7 +344,6 @@ PRIVATE void untar(const char *path)
 	int fd_tar = open(path, O_RDWR);
 	assert(fd_tar >= 0);
 
-
 	while(1)
 	{
 		read(fd_tar, buf, SECTOR_SIZE);
@@ -353,7 +352,7 @@ PRIVATE void untar(const char *path)
 			break;
 		}
 		struct posix_tar_header *pth = (struct posix_tar_header*)buf;
-		int fd = open(pth->name, O_CREAT | O_RDWR);
+		int fd = open(pth->name, O_CREAT | O_RDWR | O_TRUNC);
 		if(fd < 0)
 		{
 			printf("   fail to extract file:%s\n", pth->name);

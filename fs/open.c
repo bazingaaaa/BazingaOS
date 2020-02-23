@@ -67,34 +67,41 @@ PUBLIC int do_open(MESSAGE *msg)
 		panic("fd table is full");
 	}
 
-
-	/*查找文件*/
 	inode_nr = search_file(path);
-	if(flags & O_CREAT)/*创建文件*/
+	if(INVALID_INODE == inode_nr)
 	{
-		if(0 != inode_nr)/*待创建的文件已经存在*/
+		if(flags & O_CREAT)
 		{
+			pNode = create_file(path, flags);
+			inode_nr = pNode->i_num;
+		}
+		else
+		{
+			printl("file exist\n");
 			return -1;
 		}
-		/*创建文件*/
-		if(0 == (pNode = create_file(path, flags)))
-		{
-			return -1;
-		}
-		inode_nr = pNode->i_num;
 	}
-	else/*读写文件*/
-	{	
-
-		assert(flags & O_RDWR);
-		/*抽取文件名*/
-		if(0 != strip_path(filename, &dir_inode, path) || 0 == inode_nr)/*无效路径名或者未找到该文件*/
+	else if(flags & O_RDWR)
+	{
+		if((flags & O_CREAT) && !(flags & O_TRUNC))
 		{
-			return -2;
+			return -1;
 		}
+		assert((flags == O_RDWR ||
+				flags == O_RDWR | O_TRUNC) ||
+				flags == O_RDWR | O_TRUNC | O_CREAT);
+		strip_path(filename, &dir_inode, path);
 		pNode = get_inode(dir_inode->i_dev, inode_nr);
 	}
-
+	else
+	{
+		return -1;
+	}
+	if(flags & O_TRUNC)
+	{
+		pNode->i_size = 0;
+		sync_inode(pNode);
+	}
 
 	assert(0 != inode_nr && 0 != pNode);
 
