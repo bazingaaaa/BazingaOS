@@ -17,59 +17,23 @@ u8 task_stack[STACK_SIZE_TOTAL];
 
 void testA()
 {	
-	int base, limit;
-	char tty_name[] = "/dev_tty1";
-	int fd_stdin = open(tty_name, O_RDWR);
-	//printf("fd_stdin:%d\n", fd_stdin);
-	//assert(0 == fd_stdin);
-	int fd_stdout = open(tty_name, O_RDWR);
-	//assert(1 == fd_stdout);
-	char rdbuf[128];
-
 	while(1)
-	{
-		write(fd_stdout, "$ ", 2);
-		int n = read(fd_stdin, rdbuf, 70);
-		rdbuf[n] = 0;
-
-		if(strcmp(rdbuf, "hello") == 0)
-		{
-			printf("hello world!\n");
-		}
-		else
-		{
-			if(rdbuf[0])
-			{
-				printf("{%s}\n", rdbuf);
-			}
-		}
-	}
+	{}
 }
 
 
 void testB()
 {
-	int i = 0x1000;
 	while(1)
 	{
-		//disp_color_str("B", BRIGHT | MAKE_COLOR(BLACK, RED));
-		//(get_ticks());
-		//printf("B");
-		//milli_delay(200);
 	}
 }
 
 
 void testC()
 {
-	// int i = 0x2000;
 	while(1)
 	{
-		//disp_int(11111);
-		//disp_color_str("C", BRIGHT | MAKE_COLOR(BLACK, RED));
-		//disp_int(get_ticks());
-		//printf("C");
-		//milli_delay(200);
 	}
 }
 
@@ -90,7 +54,7 @@ PUBLIC void kernel_main()
 	u32 rpl;
 	u32 privilege;
 
-	for(i = 0;i < NR_TASKS + NR_PROCS;i++)
+	for(i = 0;i < NR_TASKS + NR_PROCS;i++, p_proc++)
 	{		
 		/*初始化进程表中的局部描述符信息,ldt中的第0和第1个段描述符*/
 		//p_proc->ldt_sel = seletor_ldt;/*该进程的ldt在gdt中的位置，切换时加载用*/
@@ -167,7 +131,6 @@ PUBLIC void kernel_main()
 			p_proc->filp[j] = 0;
 
 		//seletor_ldt += 8;
-		p_proc++;	
 	}
 
 	/*设置时钟中断相关*/
@@ -229,43 +192,118 @@ PUBLIC int get_ticks()
 PUBLIC void Init()
 {
 	/*首先打开终端文件（fd为0代表输入 fd为1代表输出）*/
-	char tty_name[] = "/dev_tty1";
-	int fd_stdin = open(tty_name, O_RDWR);
-	int fd_stdout = open(tty_name, O_RDWR);
-	int pid = 1;
+	int fd_stdin = open("/dev_tty0", O_RDWR);
+	assert(fd_stdin == 0);
+	int fd_stdout = open("/dev_tty0", O_RDWR);
+	assert(fd_stdout == 1);
+	char *tty_list[] = {"/dev_tty1", "/dev_tty2"};
+	int i;
 
 	printf("Init() is running ...\n");
 	
-	//int base, limit;
-	//int ret = get_kernel_map(&base, &limit);
-	//printf("base:0x%x   limit:0x%x\n", base, limit);
 	untar("/cmd.tar");
 
-
-	pid = fork();
-	if(pid != 0)
+	// /*创建两个shell分别连接终端1和终端2*/
+	for(i = 0;i < sizeof(tty_list)/sizeof(tty_list[0]);i++)
 	{
-		printf("this is parent proc, pid of child is %d\n", pid);
-		int s;
-		int child;
-		if(0 <=	(child = wait(&s)))
+		int pid = fork();
+		if(pid != 0)/*主进程*/
 		{
-			printf("child:%d exit with status:%d\n", child, s);
+			printf("create child proc:%d\n", pid);
+		}
+		else/*子进程，创建shell*/
+		{
+			close(0);
+			close(1);
+
+			shabby_shell(tty_list[i]);
 		}
 	}
-	else
-	{
-		int ret = execl("/pwd", "pwd", 0);
-		printf("execl:%d\n", ret);
 
-		//execl("echo", 0);
-		printf("this is child proc\n");
-
-		exit(123);
-	}
-	
 	while(1)
 	{
+		int s;
+		int child = wait(&s);
+		printf("child:%d exit with status:%d\n", child, s);
+	}
+}
+
+
+/*
+功能：一个简陋的shell
+输入：终端名称
+备注：1.开启终端文件作为输入/输出
+*/
+PUBLIC void shabby_shell(const char* tty_name)
+{
+	int fd_stdin = open(tty_name, O_RDWR);
+	assert(fd_stdin == 0);
+	int fd_stdout = open(tty_name, O_RDWR);
+	assert(fd_stdout == 1);
+	char rdbuf[70];/*输入缓冲区*/
+
+	while(1)
+	{
+		write(fd_stdout, "$ ", 2);
+		int r = read(fd_stdin, rdbuf, 70);
+		rdbuf[r] = 0;
+		int word = 0;
+		char *p = rdbuf;
+		char *s;
+		int argc = 0;/*参数个数*/
+		char *argv[PROC_ORIGIN_STACK];/*参数列表*/
+		char c;
+
+		/*对输入字符进行解析*/
+		do
+		{
+			c = *p;
+			if(!word && *p != ' ' && *p != 0)/*单词开始*/
+			{
+				word = 1;
+				s = p;
+			}
+			if(word && (*p == ' ' || *p == 0))/*单词结束*/
+			{
+				argv[argc] = s;
+				argc++;
+				word = 0;
+				*p = 0;/*字符串结尾，将空格替换为0*/
+			}
+			p++;
+		}while(c);
+		argv[argc] = 0;/*标志参数数组结尾*/
+
+		/*判断是否是有效命令*/
+		//printf("open file:%s\n", argv[0]);
+		int fd = s(argv[0], O_RDWR);
+		//printf("fd:%d\n", fd);
+		if(fd < 0)/*无效命令*/
+		{
+			if(rdbuf[0])
+			{
+				write(fd_stdout, "{", 1);
+				write(fd_stdout, rdbuf, r);
+				write(fd_stdout, "}\n", 2);
+			}
+		}
+		else/*有效命令*/
+		{
+			close(fd);
+			int pid = fork();
+			if(pid != 0)
+			{
+				int s;
+				wait(&s);
+			}
+			else
+			{
+				//printf("path:%s argc:%d r:%d\n", argv[0], argc, r);
+				//exit(0);
+				//execl("/echo", "echo", "hello", "world!", 0);
+				execv(argv[0], argv);
+			}
+		}
 	}
 }
 
