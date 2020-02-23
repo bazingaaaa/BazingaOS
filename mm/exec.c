@@ -36,7 +36,7 @@ PUBLIC int do_exec(MESSAGE *msg)
 	struct stat s;
 	if(0 != stat(path, &s))
 	{
-		printl("do_exec:stat fail\n");
+		printl("do_exec:stat fail path:%s\n", path);
 		return -1;
 	}
 
@@ -45,8 +45,6 @@ PUBLIC int do_exec(MESSAGE *msg)
 	{
 		return -1;
 	}
-
-	
 
 	assert(s.st_size <= MMBUF_SIZE);
 	read(fd, mmbuf, s.st_size);/*将文件读取到mm任务的缓存区*/
@@ -63,10 +61,6 @@ PUBLIC int do_exec(MESSAGE *msg)
 			assert(pPh->p_vaddr < PROC_DEFAULT_IMG_SIZE);
 		}
 	}
-	printl("0x%x 0x%x 0x%x 0x%x\n", mmbuf[0], mmbuf[1], mmbuf[2], mmbuf[3]);
-	printl("e_phnum:%d \n", pEh->e_phnum);
-
-
 
 	char stk[PROC_ORIGIN_STACK];
 
