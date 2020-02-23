@@ -34,9 +34,7 @@ PUBLIC int do_open(MESSAGE *msg)
 	int imode = 0;
 
 	/*获取文件路径*/
-	phys_copy(va2la(TASK_FS, path), va2la(proc2pid(pcaller), msg->PATHNAME), msg->NAME_LEN);
-	path[msg->NAME_LEN] = 0; 
-
+	phys_copy(va2la(TASK_FS, path), va2la(proc2pid(pcaller), msg->PATHNAME), MAX_PATH);
 
 	/*查看是否有空闲fd*/
 	for(i = 0;i < NR_FILES;i++)
@@ -52,8 +50,6 @@ PUBLIC int do_open(MESSAGE *msg)
 		panic("fd slot is full");
 	}
 	
-
-
 	/*查看fd_table中是否有空闲槽位*/
 	for(i = 0;i < NR_FILE_DESC;i++)
 	{
@@ -66,7 +62,6 @@ PUBLIC int do_open(MESSAGE *msg)
 	{
 		panic("fd table is full");
 	}
-
 
 	/*查找文件*/
 	inode_nr = search_file(path);
@@ -84,8 +79,7 @@ PUBLIC int do_open(MESSAGE *msg)
 		inode_nr = pNode->i_num;
 	}
 	else/*读写文件*/
-	{	
-
+	{
 		assert(flags & O_RDWR);
 		/*抽取文件名*/
 		if(0 != strip_path(filename, &dir_inode, path) || 0 == inode_nr)/*无效路径名或者未找到该文件*/
@@ -94,7 +88,6 @@ PUBLIC int do_open(MESSAGE *msg)
 		}
 		pNode = get_inode(dir_inode->i_dev, inode_nr);
 	}
-
 
 	assert(0 != inode_nr && 0 != pNode);
 
@@ -109,7 +102,6 @@ PUBLIC int do_open(MESSAGE *msg)
 	fd_table[i].fd_pos = 0;
 
 	imode = pNode->i_mode;
-
 
 	if(I_CHAR_SPECIAL == imode)/*特殊字符文件*/
 	{
@@ -144,8 +136,7 @@ PUBLIC int do_close(MESSAGE *msg)
 		return -1;
 	}
 	put_inode(pcaller->filp[fd]->fd_inode);
-	if(--pcaller->filp[fd]->fd_cnt == 0)
-		pcaller->filp[fd]->fd_inode = 0;
+	pcaller->filp[fd]->fd_inode = 0;
 	pcaller->filp[fd] = 0;
 
 	return 0;

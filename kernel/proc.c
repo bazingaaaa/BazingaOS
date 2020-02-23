@@ -230,8 +230,8 @@ PUBLIC int msg_receive(PROCESS *current, int src, MESSAGE *m)
 	else if(src == INTERRUPT)
 	{
 		p_who_wanna_rcv->p_flags |= RECEIVING;
+		//p_who_wanna_rcv->p_flags = RECEIVING;
 		p_who_wanna_rcv->p_recvfrom = INTERRUPT;
-		p_who_wanna_rcv->p_msg = m;
 
 		block(p_who_wanna_rcv);
 

@@ -14,7 +14,7 @@ LIB		= ../lib/bazingacrt.a
 .PHONY = everything clean realclean all
 
 OBJS = start.o echo.o pwd.o
-BIN = pwd echo 
+BIN = echo pwd
 
 everything:$(BIN) $(OBJS)
 
@@ -28,7 +28,7 @@ realclean:
 
 install: all clean
 	cp ../kernel/kernel.bin ./ -v
-	tar vcf inst.tar  kernel.bin $(BIN)	
+	tar vcf inst.tar  kernel.bin $(BIN) 
 	dd if=inst.tar of=$(HD) seek=29360128 bs=1 count=81920 conv=notrunc
 
 start.o: start.asm
